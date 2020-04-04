@@ -1,0 +1,13 @@
+FROM node:latest
+MAINTAINER Sebastian Raff <hq@ccu.io>
+
+ADD . /app
+WORKDIR /app
+RUN npm install
+RUN apt-get update
+RUN apt-get install -y openssh-client telnet
+
+EXPOSE 3000
+
+ENTRYPOINT ["node"]
+CMD ["app.js", "-p", "3000"]
