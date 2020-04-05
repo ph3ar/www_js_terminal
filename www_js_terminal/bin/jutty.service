@@ -1,0 +1,19 @@
+# systemd unit file
+#
+# place in /etc/systemd/system
+# systemctl enable jutty.service
+# systemctl start jutty.service
+
+[Unit]
+Description=Web-based ssh/telnet client
+After=network.target
+
+[Service]
+User=root
+Group=root
+
+WorkingDirectory=/usr/local/lib/node_modules/jutty # CHANGE ME
+ExecStart=/usr/bin/node app.js -p 3000
+
+[Install]
+WantedBy=multi-user.target

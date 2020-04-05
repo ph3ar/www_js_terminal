@@ -1,0 +1,36 @@
+{
+  "name": "PH3AR Terminal",
+  "version": "1.0.0",
+  "dependencies": {
+    "body-parser": "^1.16.1",
+    "express": "^4.14.1",
+    "optimist": "^0.6.1",
+    "pty.js": "^0.3.1",
+    "socket.io": "^1.7.3",
+    "yalm": "^4.0.2"
+  },
+  "devDependencies": {
+    "load-grunt-tasks": "^3.0",
+    "grunt": "^0.4",
+    "grunt-shell": "^1.1",
+    "grunt-mkdir": "^0.1",
+    "grunt-git": "^0.3",
+    "grunt-contrib-clean": "^0.6"
+  },
+  "description": "Web-based ssh/telnet client, useful in environments where only http(s) is allowed",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hobbyquaker/jutty.git"
+  },
+  "author": "Sebastian Raff <hq@ccu.io> (https://github.com/hobbyquaker)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hobbyquaker/jutty/issues"
+  },
+  "homepage": "https://github.com/hobbyquaker/jutty",
+  "preferGlobal": true,
+  "bin": {
+    "wetty": "./bin/jutty.js"
+  }
+}
