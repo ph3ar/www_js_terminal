@@ -1,0 +1,3 @@
+## 2024-05-24 - Accessibility on dynamically generated list items
+**Learning:** In legacy javascript apps where DOM elements are created dynamically from strings (like in `jutty.js`), accessibility attributes like `aria-label` and `title` are often missed on icon-only action buttons.
+**Action:** Always scan string concatenation blocks that generate HTML buttons in legacy apps to ensure they include proper `aria-label` and `title` attributes, especially if they only contain an icon (e.g. `glyphicon`).
