@@ -150,13 +150,15 @@ $(document).ready(function () {
 
     function listConnections() {
         var names = Object.keys(savedConnections).sort();
-        $connections.html('');
+        var html = '';
         names.forEach(function (name) {
             $connections.append('<a class="list-group-item load" href="#" data-target="' + name + '">' + name +
                 '<button class="btn btn-xs btn-danger delete" data-name="' + name + '" aria-label="Delete ' + name + ' connection" title="Delete ' + name + ' connection">' +
                 '<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>' +
-                '</button></a>');
+                '</button></a>';
         });
+        // ⚡ Bolt: Batch DOM insertion to prevent multiple reflows/repaints inside the loop
+        $connections.html(html);
         $('a.load').click(function (e) {
             e.stopPropagation();
             setVals(savedConnections[$(this).data('target')]);
