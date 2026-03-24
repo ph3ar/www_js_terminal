@@ -83,7 +83,7 @@
                         <div class="row">
                             <div class="col-lg-12 col-md-12 col-xs-12">
 
-                                <div class="btn-group" data-toggle="buttons">
+                                <div class="btn-group" data-toggle="buttons" aria-label="Connection Protocol">
                                     <label class="btn btn-primary active">
                                         <input type="radio" name="options" id="ssh" checked> SSH
                                     </label>
@@ -99,14 +99,14 @@
 
                             <div class="col-lg-8 col-md-8 col-xs-8">
                                 <div class="input-group">
-                                    <span class="input-group-addon">Host</span>
-                                    <input id="host" type="text" class="form-control" placeholder="example.com" aria-label="Host">
+                                    <span class="input-group-addon" id="addon-host">Host</span>
+                                    <input id="host" type="text" class="form-control" aria-describedby="addon-host" placeholder="e.g. 192.168.1.10">
                                 </div>
                             </div>
                             <div class="col-lg-4 col-md-4 col-xs-4">
                                 <div class="input-group">
-                                    <span class="input-group-addon">Port</span>
-                                    <input type="number" id="port" class="form-control" placeholder="22" aria-label="Port">
+                                    <span class="input-group-addon" id="addon-port">Port</span>
+                                    <input type="number" id="port" class="form-control" aria-describedby="addon-port" placeholder="22">
                                 </div>
                             </div>
                         </div>
@@ -114,8 +114,8 @@
                         <div class="ssh row">
                             <div class="col-lg-12 col-md-12 col-xs-12">
                                 <div class="input-group">
-                                    <span class="input-group-addon">User</span>
-                                    <input type="text" class="form-control" id="user" placeholder="username" aria-label="User">
+                                    <span class="input-group-addon" id="addon-user">User</span>
+                                    <input type="text" class="form-control" id="user" aria-describedby="addon-user" placeholder="e.g. root">
                                 </div>
                             </div>
                         </div>
@@ -142,8 +142,8 @@
 
                             <div class="col-lg-9 col-md-9 col-xs-9">
                                 <div class="input-group">
-                                    <span class="input-group-addon">Save as...</span>
-                                    <input id="name" type="text" class="form-control" placeholder="Connection name" aria-label="Save as...">
+                                    <span class="input-group-addon" id="addon-name">Save as...</span>
+                                    <input id="name" type="text" class="form-control" aria-describedby="addon-name" placeholder="Connection name">
                                     <span class="input-group-btn">
                     <button class="btn btn-primary" type="button" id="save">
                         <span class="glyphicon glyphicon-save-file" aria-hidden="true"></span> Save
