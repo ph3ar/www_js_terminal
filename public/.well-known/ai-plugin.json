@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_model": "PH3ARTerminal",
+  "name_for_human": "PH3AR Terminal",
+  "description_for_model": "Plugin for accessing PH3AR Terminal, a web-based SSH/Telnet client.",
+  "description_for_human": "Web-based SSH/Telnet client, useful in environments where only http(s) is allowed.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "http://localhost:3000/.well-known/openapi.yaml",
+    "is_user_authenticated": false
+  },
+  "logo_url": "http://localhost:3000/terminal.png",
+  "contact_email": "support@platphormnews.com",
+  "legal_info_url": "http://platphormnews.com/legal"
+}

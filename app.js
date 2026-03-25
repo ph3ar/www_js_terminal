@@ -4,9 +4,12 @@ var http =          require('http');
 var https =         require('https');
 var path =          require('path');
 var server =        require('socket.io');
-var pty =           require('pty.js');
+var pty =           require('node-pty');
 var fs =            require('fs');
 var log =           require('yalm');
+var crypto =        require('crypto');
+var os =            require('os');
+
 log.setLevel('debug');
 
 var opts = require('optimist')
@@ -36,13 +39,21 @@ if (opts.sslkey && opts.sslcert) {
     };
 }
 
-var httpserv;
-
 var app = express();
+
+app.use('/.well-known', function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    next();
+});
 
 app.use(bodyParser.urlencoded({
     extended: true
 }));
+
+app.get('/', function(req, res) {
+    res.sendFile(__dirname + '/public/jutty.html');
+});
 
 app.post('/', function(req, res) {
     res.sendFile(__dirname + '/public/jutty.html');
@@ -50,65 +61,112 @@ app.post('/', function(req, res) {
 
 app.use('/', express.static(path.join(__dirname, 'public/')));
 
-if (runhttps) {
-    httpserv = https.createServer(opts.ssl, app).listen(opts.port, function () {
-        log.info('https on port ' + opts.port);
-    });
+var httpserv;
+var io;
+
+if (require.main === module) {
+    if (runhttps) {
+        httpserv = https.createServer(opts.ssl, app).listen(opts.port, function () {
+            log.info('https on port ' + opts.port);
+        });
+    } else {
+        httpserv = http.createServer(app).listen(opts.port, function () {
+            log.info('http on port ' + opts.port);
+        });
+    }
+
+    io = server(httpserv, {path: '/socket.io'});
+    setupIo(io);
 } else {
-    httpserv = http.createServer(app).listen(opts.port, function () {
-        log.info('http on port ' + opts.port);
-    });
+    io = server();
+    setupIo(io);
 }
 
-var io = server(httpserv, {path: '/socket.io'});
+module.exports = app;
+module.exports.app = app;
 
-var term;
+function setupIo(io) {
+    io.on('connection', function (socket) {
+        log.info('socket.io connection');
+        var term;
+        var keyFile;
 
-io.on('connection', function (socket) {
-    log.info('socket.io connection');
+        socket.on('start', function (data) {
 
-    socket.on('start', function (data) {
+            var params;
+            var command;
 
-        var params;
+            if (data.type === 'ssh') {
+                command = 'ssh';
+                params = [];
+                if (data.port && data.port !== "22") {
+                    params.push('-p', data.port);
+                }
 
-        if (data.type === 'telnet') {
-            params = [data.host, data.port];
-        } else {
-            data.type = 'telnet';
-            params = [data.host, data.port];
-        }
+                if (data.key) {
+                    keyFile = path.join(os.tmpdir(), 'jutty-key-' + crypto.randomBytes(4).toString('hex'));
+                    fs.writeFileSync(keyFile, data.key, { mode: 0o600 });
+                    params.push('-i', keyFile);
+                }
 
-        log.info(data.type, params.join(' '));
+                var target = data.host;
+                if (data.user) {
+                    target = data.user + '@' + data.host;
+                }
+                params.push(target);
+            } else {
+                command = 'telnet';
+                params = [data.host, data.port];
+            }
 
-        term = pty.spawn(data.type, params, {
-            name: 'xterm-256color',
-            cols: data.col,
-            rows: data.row
+            log.info(command, params.join(' '));
+
+            term = pty.spawn(command, params, {
+                name: 'xterm-256color',
+                cols: data.col,
+                rows: data.row
+            });
+
+            log.info(term.pid, 'spawned');
+            term.on('data', function(data) {
+                socket.emit('output', data);
+            });
+            term.on('exit', function (code) {
+                log.info(term.pid, 'ended');
+                socket.emit('end');
+
+                if (keyFile) {
+                    try { fs.unlinkSync(keyFile); } catch(e) {}
+                    keyFile = null;
+                }
+
+                if (term) {
+                    try { term.destroy(); } catch(e) {}
+                }
+                term = null;
+            });
+
         });
 
-        log.info(term.pid, 'spawned');
-        term.on('data', function(data) {
-            socket.emit('output', data);
-        });
-        term.on('exit', function (code) {
-            log.info(term.pid, 'ended');
-            socket.emit('end');
-            term.destroy();
-            term = null;
+        socket.on('resize', function (data) {
+            if (term && term._fd) {
+                try { term.resize(data.col, data.row); } catch(e) {}
+            }
         });
 
-    });
+        socket.on('input', function (data) {
+            term && term.write(data);
+        });
 
-    socket.on('resize', function (data) {
-        term && term.resize(data.col, data.row);
-    });
+        socket.on('disconnect', function () {
+            if (keyFile) {
+                try { fs.unlinkSync(keyFile); } catch(e) {}
+                keyFile = null;
+            }
+            if (term && term.destroy) {
+                try { term.destroy(); } catch(e) {}
+            }
+        });
 
-    socket.on('input', function (data) {
-        term && term.write(data);
     });
-
-    socket.on('disconnect', function () {
-        term && term.end();
-    });
-
-});
+}

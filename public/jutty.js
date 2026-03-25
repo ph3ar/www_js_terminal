@@ -114,6 +114,7 @@ $(document).ready(function () {
         $back.hide();
         $settings.show();
         $terminal.hide();
+        $host.focus();
     });
 
     function getVals() {

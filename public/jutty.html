@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>PH3AR Terminal</title>
-    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/darkly.min.css">
+    <link rel="stylesheet" href="bower_components/bootswatch/dist/darkly/bootstrap.min.css">
     <link rel="stylesheet" href="bower_components/bootstrap-fileinput/css/fileinput.min.css">
     <style>
         html, body {
@@ -120,7 +120,7 @@
                             </div>
                         </div>
 
-<!--
+
                         <div class="ssh row">
                             <div class="col-lg-12 col-md-12 col-xs-12">
                                 <input type="hidden" id="keyfilename">
@@ -132,10 +132,10 @@
                                 </div>
                             </div>
                         </div>
--->
+
                         <div class="row">
                             <div class="col-lg-3 col-md-3 col-xs-3">
-                                <button class="btn btn-primary" id="start">
+                                <button class="btn btn-primary" id="start" aria-label="Connect to server">
                                     <span class="glyphicon glyphicon-console" aria-hidden="true"></span> Connect
                                 </button>
                             </div>
@@ -145,7 +145,7 @@
                                     <span class="input-group-addon">Save as...</span>
                                     <input id="name" type="text" class="form-control">
                                     <span class="input-group-btn">
-                    <button class="btn btn-primary" type="button" id="save">
+                    <button class="btn btn-primary" type="button" id="save" aria-label="Save connection">
                         <span class="glyphicon glyphicon-save-file" aria-hidden="true"></span> Save
                     </button>
                   </span>
@@ -175,7 +175,7 @@
     </div>
 
     <div id="back">
-        <button id="backbutton" class="btn btn-lg btn-warning">Back</button>
+        <button id="backbutton" class="btn btn-lg btn-warning" aria-label="Go back to settings">Back</button>
     </div>
 
     <div id="terminal"></div>

@@ -1,0 +1,15 @@
+openapi: 3.0.1
+info:
+  title: PH3AR Terminal API
+  description: API for the PH3AR Terminal.
+  version: 'v1'
+servers:
+  - url: http://localhost:3000
+paths:
+  /:
+    get:
+      operationId: getTerminal
+      summary: Get the terminal HTML page
+      responses:
+        "200":
+          description: OK

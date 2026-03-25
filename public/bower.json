@@ -19,6 +19,7 @@
     "jquery": "^3.1.1",
     "store-js": "store.js#^1.3.20",
     "bootstrap": "^3.3.7",
-    "bootstrap-fileinput": "^4.3.7"
+    "bootstrap-fileinput": "^4.3.7",
+    "bootswatch": "^3.4.1"
   }
 }
