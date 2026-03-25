@@ -4,7 +4,7 @@ info:
   description: API for the PH3AR Terminal.
   version: 'v1'
 servers:
-  - url: http://localhost:3000
+  - url: https://platphormnews.com
 paths:
   /:
     get:

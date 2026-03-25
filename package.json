@@ -1,10 +1,11 @@
 {
-  "name": "PH3AR Terminal",
+  "name": "ph3ar-terminal",
   "version": "1.0.0",
   "dependencies": {
     "body-parser": "^1.16.1",
     "express": "^4.17.3",
-    "node-pty": "0.10.1",
+    "express-rate-limit": "^8.3.1",
+    "node-pty": "^1.1.0",
     "optimist": "^0.6.1",
     "socket.io": "^2.4.0",
     "yalm": "^4.0.2"

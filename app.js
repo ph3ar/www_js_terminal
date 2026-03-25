@@ -39,7 +39,18 @@ if (opts.sslkey && opts.sslcert) {
     };
 }
 
+const { rateLimit } = require('express-rate-limit');
+
 var app = express();
+app.set('trust proxy', 1);
+
+var limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+
+app.use('/.well-known', limiter);
 
 app.use('/.well-known', function(req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
@@ -93,14 +104,27 @@ function setupIo(io) {
 
         socket.on('start', function (data) {
 
+
             var params;
             var command;
+
+            // Validate data.col and data.row
+            var col = parseInt(data.col, 10);
+            var row = parseInt(data.row, 10);
+            if (isNaN(col) || col < 1 || col > 500) col = 80;
+            if (isNaN(row) || row < 1 || row > 500) row = 24;
+
+            // Sanitize host to prevent flag injection (e.g. -o ProxyCommand)
+            var targetHost = (data.host || '').replace(/[^a-zA-Z0-9.-]/g, '');
+            if (!targetHost) return;
 
             if (data.type === 'ssh') {
                 command = 'ssh';
                 params = [];
-                if (data.port && data.port !== "22") {
-                    params.push('-p', data.port);
+
+                var targetPort = parseInt(data.port, 10);
+                if (targetPort && targetPort > 0 && targetPort < 65536) {
+                    params.push('-p', targetPort.toString());
                 }
 
                 if (data.key) {
@@ -109,22 +133,31 @@ function setupIo(io) {
                     params.push('-i', keyFile);
                 }
 
-                var target = data.host;
-                if (data.user) {
-                    target = data.user + '@' + data.host;
+                var targetUser = (data.user || '').replace(/[^a-zA-Z0-9._-]/g, '');
+                var target = targetHost;
+                if (targetUser) {
+                    target = targetUser + '@' + targetHost;
                 }
+
+                // Disable executing commands
+                params.push('-o', 'ClearAllForwardings=yes');
                 params.push(target);
             } else {
                 command = 'telnet';
-                params = [data.host, data.port];
+                var targetPort = parseInt(data.port, 10) || 23;
+                params = [targetHost, targetPort.toString()];
             }
+
+            // Strictly enforce command
+            if (command !== 'ssh' && command !== 'telnet') return;
+
 
             log.info(command, params.join(' '));
 
             term = pty.spawn(command, params, {
                 name: 'xterm-256color',
-                cols: data.col,
-                rows: data.row
+                cols: col,
+                rows: row
             });
 
             log.info(term.pid, 'spawned');

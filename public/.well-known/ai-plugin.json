@@ -9,10 +9,10 @@
   },
   "api": {
     "type": "openapi",
-    "url": "http://localhost:3000/.well-known/openapi.yaml",
+    "url": "https://platphormnews.com/.well-known/openapi.yaml",
     "is_user_authenticated": false
   },
-  "logo_url": "http://localhost:3000/terminal.png",
+  "logo_url": "https://platphormnews.com/terminal.png",
   "contact_email": "support@platphormnews.com",
   "legal_info_url": "http://platphormnews.com/legal"
 }
