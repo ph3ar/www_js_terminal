@@ -25,7 +25,7 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-app.post('/', function(req, res) {
+app.post('/', limiter, function(req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
 
@@ -81,7 +81,7 @@ function setupSocketIo(httpserv) {
         });
 
         socket.on('input', function (data) {
-            term && term.write(String(data));
+            if (term && typeof data === 'string') { term.write(data); }
         });
 
         socket.on('disconnect', function () {
