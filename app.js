@@ -71,19 +71,39 @@ io.on('connection', function (socket) {
 
         var params;
 
+        // 🛡️ Sentinel: Sanitize and validate inputs to prevent command injection and DoS
+        var hostStr = String(data.host || '').trim();
+        var portStr = String(data.port || '').trim();
+        var portNum = parseInt(portStr, 10);
+
+        if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(hostStr)) {
+            log.error('Invalid host input');
+            socket.emit('end');
+            return;
+        }
+
+        if (!/^\d+$/.test(portStr) || portNum < 1 || portNum > 65535) {
+            log.error('Invalid port input');
+            socket.emit('end');
+            return;
+        }
+
+        var cols = parseInt(data.col, 10) || 80;
+        var rows = parseInt(data.row, 10) || 24;
+
         if (data.type === 'telnet') {
-            params = [data.host, data.port];
+            params = [hostStr, portStr];
         } else {
             data.type = 'telnet';
-            params = [data.host, data.port];
+            params = [hostStr, portStr];
         }
 
         log.info(data.type, params.join(' '));
 
         term = pty.spawn(data.type, params, {
             name: 'xterm-256color',
-            cols: data.col,
-            rows: data.row
+            cols: cols,
+            rows: rows
         });
 
         log.info(term.pid, 'spawned');
