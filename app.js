@@ -4,39 +4,10 @@ var http =          require('http');
 var https =         require('https');
 var path =          require('path');
 var server =        require('socket.io');
-var pty =           require('pty.js');
+var pty =           require('node-pty');
 var fs =            require('fs');
 var log =           require('yalm');
 log.setLevel('debug');
-
-var opts = require('optimist')
-    .options({
-        sslkey: {
-            demand: false,
-            description: 'path to SSL key'
-        },
-        sslcert: {
-            demand: false,
-            description: 'path to SSL certificate'
-        },
-        port: {
-            demand: true,
-            alias: 'p',
-            description: 'wetty listen port'
-        }
-    }).boolean('allow_discovery').argv;
-
-var runhttps = false;
-
-if (opts.sslkey && opts.sslcert) {
-    runhttps = true;
-    opts['ssl'] = {
-        key: fs.readFileSync(path.resolve(opts.sslkey)),
-        cert: fs.readFileSync(path.resolve(opts.sslcert))
-    };
-}
-
-var httpserv;
 
 var app = express();
 
@@ -45,70 +16,109 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.post('/', function(req, res) {
-    res.sendFile(__dirname + '/public/jutty.html');
+    res.sendFile(__dirname + '/public/index.html');
 });
 
-app.use('/', express.static(path.join(__dirname, 'public/')));
+// Added maxAge for performance optimization (caching static files)
+app.use('/', express.static(path.join(__dirname, 'public/'), { maxAge: '1d' }));
 
-if (runhttps) {
-    httpserv = https.createServer(opts.ssl, app).listen(opts.port, function () {
-        log.info('https on port ' + opts.port);
+function setupSocketIo(httpserv) {
+    var io = server(httpserv, {path: '/socket.io'});
+    var term;
+
+    io.on('connection', function (socket) {
+        log.info('socket.io connection');
+
+        socket.on('start', function (data) {
+
+            var params;
+
+            if (data.type === 'telnet') {
+                params = [data.host, data.port];
+            } else {
+                data.type = 'telnet';
+                params = [data.host, data.port];
+            }
+
+            log.info(data.type, params.join(' '));
+
+            term = pty.spawn(data.type, params, {
+                name: 'xterm-256color',
+                cols: data.col,
+                rows: data.row
+            });
+
+            log.info(term.pid, 'spawned');
+            term.on('data', function(data) {
+                socket.emit('output', data);
+            });
+            term.on('exit', function (code) {
+                log.info(term.pid, 'ended');
+                socket.emit('end');
+                term.kill();
+                term = null;
+            });
+
+        });
+
+        socket.on('resize', function (data) {
+            term && term.resize(data.col, data.row);
+        });
+
+        socket.on('input', function (data) {
+            term && term.write(data);
+        });
+
+        socket.on('disconnect', function () {
+            term && term.kill();
+        });
+
     });
-} else {
-    httpserv = http.createServer(app).listen(opts.port, function () {
-        log.info('http on port ' + opts.port);
-    });
+
+    return io;
 }
 
-var io = server(httpserv, {path: '/socket.io'});
+if (require.main === module) {
+    var opts = require('optimist')
+        .options({
+            sslkey: {
+                demand: false,
+                description: 'path to SSL key'
+            },
+            sslcert: {
+                demand: false,
+                description: 'path to SSL certificate'
+            },
+            port: {
+                demand: true,
+                alias: 'p',
+                description: 'wetty listen port'
+            }
+        }).boolean('allow_discovery').argv;
 
-var term;
+    var runhttps = false;
 
-io.on('connection', function (socket) {
-    log.info('socket.io connection');
+    if (opts.sslkey && opts.sslcert) {
+        runhttps = true;
+        opts['ssl'] = {
+            key: fs.readFileSync(path.resolve(opts.sslkey)),
+            cert: fs.readFileSync(path.resolve(opts.sslcert))
+        };
+    }
 
-    socket.on('start', function (data) {
+    var httpserv;
 
-        var params;
-
-        if (data.type === 'telnet') {
-            params = [data.host, data.port];
-        } else {
-            data.type = 'telnet';
-            params = [data.host, data.port];
-        }
-
-        log.info(data.type, params.join(' '));
-
-        term = pty.spawn(data.type, params, {
-            name: 'xterm-256color',
-            cols: data.col,
-            rows: data.row
+    if (runhttps) {
+        httpserv = https.createServer(opts.ssl, app).listen(opts.port, function () {
+            log.info('https on port ' + opts.port);
         });
-
-        log.info(term.pid, 'spawned');
-        term.on('data', function(data) {
-            socket.emit('output', data);
+    } else {
+        httpserv = http.createServer(app).listen(opts.port, function () {
+            log.info('http on port ' + opts.port);
         });
-        term.on('exit', function (code) {
-            log.info(term.pid, 'ended');
-            socket.emit('end');
-            term.destroy();
-            term = null;
-        });
+    }
 
-    });
+    setupSocketIo(httpserv);
+}
 
-    socket.on('resize', function (data) {
-        term && term.resize(data.col, data.row);
-    });
-
-    socket.on('input', function (data) {
-        term && term.write(data);
-    });
-
-    socket.on('disconnect', function () {
-        term && term.end();
-    });
-
-});
+module.exports = { app, setupSocketIo };
