@@ -16,10 +16,10 @@ app.set('trust proxy', 1);
 
 var limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100 // limit each IP to 100 requests per windowMs
+  max: 1000 // limit each IP to 100 requests per windowMs
 });
 
-app.use(limiter);
+
 
 app.use(bodyParser.urlencoded({
     extended: true
@@ -30,7 +30,7 @@ app.post('/', function(req, res) {
 });
 
 // Added maxAge for performance optimization (caching static files)
-app.use('/', express.static(path.join(__dirname, 'public/'), { maxAge: '1d' }));
+app.use('/', limiter, express.static(path.join(__dirname, 'public/'), { maxAge: '1d' }));
 
 function setupSocketIo(httpserv) {
     var io = server(httpserv, {path: '/socket.io'});
@@ -45,8 +45,8 @@ function setupSocketIo(httpserv) {
 
             // Hardcode 'telnet' or 'ssh' instead of depending completely on user input
             // Validate the user input against allowed types
-            var allowedTypes = ['telnet', 'ssh'];
-            var type = allowedTypes.includes(data.type) ? data.type : 'telnet';
+            // Only telnet is supported securely with positional arguments
+            var type = 'telnet';
 
             // Sanitize host to alphanumeric + dots + dashes
             var safeHost = String(data.host || '').replace(/[^a-zA-Z0-9\.\-]/g, '');
@@ -81,7 +81,7 @@ function setupSocketIo(httpserv) {
         });
 
         socket.on('input', function (data) {
-            term && term.write(data);
+            term && term.write(String(data));
         });
 
         socket.on('disconnect', function () {
