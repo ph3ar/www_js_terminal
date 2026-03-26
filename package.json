@@ -5,17 +5,17 @@
     "body-parser": "^1.16.1",
     "express": "^4.17.3",
     "optimist": "^0.6.1",
-    "pty.js": "^0.3.1",
+    "pty.js": "0.3.1",
     "socket.io": "^2.4.0",
     "yalm": "^4.0.2"
   },
   "devDependencies": {
-    "load-grunt-tasks": "^3.0",
     "grunt": "^1.5",
-    "grunt-shell": "^1.1",
-    "grunt-mkdir": "^0.1",
+    "grunt-contrib-clean": "^0.6",
     "grunt-git": "^0.3",
-    "grunt-contrib-clean": "^0.6"
+    "grunt-mkdir": "^0.1",
+    "grunt-shell": "^1.1",
+    "load-grunt-tasks": "^3.0"
   },
   "description": "Web-based ssh/telnet client, useful in environments where only http(s) is allowed",
   "main": "app.js",
