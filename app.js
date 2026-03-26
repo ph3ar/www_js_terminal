@@ -7,9 +7,19 @@ var server =        require('socket.io');
 var pty =           require('node-pty');
 var fs =            require('fs');
 var log =           require('yalm');
+var { rateLimit } = require('express-rate-limit');
 log.setLevel('debug');
 
 var app = express();
+
+app.set('trust proxy', 1);
+
+var limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+});
+
+app.use(limiter);
 
 app.use(bodyParser.urlencoded({
     extended: true
@@ -24,28 +34,33 @@ app.use('/', express.static(path.join(__dirname, 'public/'), { maxAge: '1d' }));
 
 function setupSocketIo(httpserv) {
     var io = server(httpserv, {path: '/socket.io'});
-    var term;
 
     io.on('connection', function (socket) {
         log.info('socket.io connection');
+        var term;
 
         socket.on('start', function (data) {
 
             var params;
 
-            if (data.type === 'telnet') {
-                params = [data.host, data.port];
-            } else {
-                data.type = 'telnet';
-                params = [data.host, data.port];
-            }
+            // Hardcode 'telnet' or 'ssh' instead of depending completely on user input
+            // Validate the user input against allowed types
+            var allowedTypes = ['telnet', 'ssh'];
+            var type = allowedTypes.includes(data.type) ? data.type : 'telnet';
 
-            log.info(data.type, params.join(' '));
+            // Sanitize host to alphanumeric + dots + dashes
+            var safeHost = String(data.host || '').replace(/[^a-zA-Z0-9\.\-]/g, '');
+            // Sanitize port as integer
+            var safePort = parseInt(data.port, 10) || 22;
 
-            term = pty.spawn(data.type, params, {
+            params = [safeHost, safePort.toString()];
+
+            log.info(type, params.join(' '));
+
+            term = pty.spawn(type, params, {
                 name: 'xterm-256color',
-                cols: data.col,
-                rows: data.row
+                cols: parseInt(data.col, 10) || 80,
+                rows: parseInt(data.row, 10) || 24
             });
 
             log.info(term.pid, 'spawned');
@@ -62,7 +77,7 @@ function setupSocketIo(httpserv) {
         });
 
         socket.on('resize', function (data) {
-            term && term.resize(data.col, data.row);
+            term && term.resize(parseInt(data.col, 10) || 80, parseInt(data.row, 10) || 24);
         });
 
         socket.on('input', function (data) {
