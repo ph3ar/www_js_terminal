@@ -151,12 +151,16 @@ $(document).ready(function () {
     function listConnections() {
         var names = Object.keys(savedConnections).sort();
         var html = '';
-        names.forEach(function (name) {
-            html += '<a class="list-group-item load" href="#" data-target="' + name + '">' + name +
-                '<button class="btn btn-xs btn-danger delete" data-name="' + name + '" aria-label="Delete ' + name + ' connection" title="Delete ' + name + ' connection">' +
-                '<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>' +
-                '</button></a>';
-        });
+        if (names.length === 0) {
+            html = '<div class="list-group-item text-muted">No saved connections yet. Fill out the options and click Save.</div>';
+        } else {
+            names.forEach(function (name) {
+                html += '<a class="list-group-item load" href="#" data-target="' + name + '">' + name +
+                    '<button class="btn btn-xs btn-danger delete" data-name="' + name + '" aria-label="Delete ' + name + ' connection" title="Delete ' + name + ' connection">' +
+                    '<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>' +
+                    '</button></a>';
+            });
+        }
         // ⚡ Bolt: Batch DOM insertion to prevent multiple reflows/repaints inside the loop
         // 💡 What: Replaced individual `$connections.append()` calls inside the loop with string concatenation, then appending the final string once using `.html()`.
         // 🎯 Why: Repeated DOM manipulations inside a loop cause multiple expensive reflows and repaints, degrading rendering performance.
