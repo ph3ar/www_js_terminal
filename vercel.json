@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/socket.io/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.js"
+    }
+  ]
+}
