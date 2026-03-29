@@ -4,7 +4,6 @@
 ## 2024-05-24 - Accessibility on Bootstrap 3 Input Groups
 **Learning:** Older Bootstrap 3 layouts often use `input-group-addon` spans instead of native `<label>` elements for form inputs, which causes screen readers to miss the input's purpose.
 **Action:** When working with legacy Bootstrap forms, always link the `input` to its `input-group-addon` using `aria-describedby` (or `aria-labelledby`) to ensure the field has a programmatic name/description.
-
-## 2024-05-24 - Valid HTML with Bootstrap 3 list groups
-**Learning:** If a Bootstrap 3 list group container dynamically generates elements, using a `<ul>` tag and filling it with `<a>` anchor tags creates invalid HTML (anchors cannot be direct children of unordered lists). This breaks screen reader expectations.
-**Action:** Use `<div class="list-group">` instead of `<ul class="list-group">` for list groups containing anchors, and ensure empty states are presented so users don't encounter completely empty elements.
+## $(date +%Y-%m-%d) - Adding Empty States for Improved First-Time UX
+**Learning:** Adding a helpful empty state when a list (like saved connections) is empty significantly improves the intuitive feel of the application for first-time users. It prevents the UI from looking broken and guides the user on what to do next. Ensure that the empty state uses existing design system classes (like Bootstrap 3's `list-group-item`, `text-muted`, `text-center`) rather than custom CSS to maintain visual consistency.
+**Action:** When working on lists or tables, always consider what happens when there is no data. Implement a clear, friendly empty state with an icon and simple instructions to guide the user. Verify its rendering and ensure it adheres to the existing UI framework.
