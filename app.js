@@ -59,11 +59,32 @@ function setupSocketIo(httpserv) {
 
             log.info(type, params.join(' '));
 
-            term = pty.spawn(type, params, {
-                name: 'xterm-256color',
-                cols: parseInt(data.col, 10) || 80,
-                rows: parseInt(data.row, 10) || 24
-            });
+        // 🛡️ Sentinel: Sanitize and validate inputs to prevent command injection and DoS
+        var hostStr = String(data.host || '').trim();
+        var portStr = String(data.port || '').trim();
+        var portNum = parseInt(portStr, 10);
+
+        if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(hostStr)) {
+            log.error('Invalid host input');
+            socket.emit('end');
+            return;
+        }
+
+        if (!/^\d+$/.test(portStr) || portNum < 1 || portNum > 65535) {
+            log.error('Invalid port input');
+            socket.emit('end');
+            return;
+        }
+
+        var cols = parseInt(data.col, 10) || 80;
+        var rows = parseInt(data.row, 10) || 24;
+
+        if (data.type === 'telnet') {
+            params = [hostStr, portStr];
+        } else {
+            data.type = 'telnet';
+            params = [hostStr, portStr];
+        }
 
             log.info(term.pid, 'spawned');
             term.on('data', function(data) {
@@ -76,6 +97,10 @@ function setupSocketIo(httpserv) {
                 term = null;
             });
 
+        term = pty.spawn(data.type, params, {
+            name: 'xterm-256color',
+            cols: cols,
+            rows: rows
         });
 
         socket.on('resize', function (data) {
