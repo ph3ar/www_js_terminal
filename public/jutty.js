@@ -234,27 +234,27 @@ $(document).ready(function () {
         var obj = getVals();
         if (obj.type === 'ssh') {
             if (obj.host && obj.user) {
-                $start.removeAttr('disabled');
+                $start.removeAttr('disabled').removeAttr('title');
                 if (obj.name) {
-                    $save.removeAttr('disabled');
+                    $save.removeAttr('disabled').removeAttr('title');
                 } else {
-                    $save.attr('disabled', true);
+                    $save.attr('disabled', true).attr('title', 'Connection name required to save');
                 }
             } else {
-                $start.attr('disabled', true);
-                $save.attr('disabled', true);
+                $start.attr('disabled', true).attr('title', 'Host and User required to connect');
+                $save.attr('disabled', true).attr('title', 'Connection name required to save');
             }
         } else {
             if (obj.host) {
-                $start.removeAttr('disabled');
+                $start.removeAttr('disabled').removeAttr('title');
                 if (obj.name) {
-                    $save.removeAttr('disabled');
+                    $save.removeAttr('disabled').removeAttr('title');
                 } else {
-                    $save.attr('disabled', true);
+                    $save.attr('disabled', true).attr('title', 'Connection name required to save');
                 }
             } else {
-                $start.attr('disabled', true);
-                $save.attr('disabled', true);
+                $start.attr('disabled', true).attr('title', 'Host required to connect');
+                $save.attr('disabled', true).attr('title', 'Connection name required to save');
             }
         }
     }
