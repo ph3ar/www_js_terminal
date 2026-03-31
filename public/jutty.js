@@ -165,24 +165,31 @@ $(document).ready(function () {
             });
         }
         $connections.html(html);
-        $('a.load').click(function (e) {
-            e.stopPropagation();
-            setVals(savedConnections[$(this).data('target')]);
-            return false;
-        });
-        $('a.load').dblclick(function (e) {
-            e.stopPropagation();
-            start();
-            return false;
-        });
-        $('button.delete').click(function (e) {
-            e.stopPropagation();
-            delete savedConnections[$(this).data('name')];
-            store.set('connections', savedConnections);
-            listConnections();
-            return false;
-        });
     }
+
+    // ⚡ Bolt Performance Optimization: Event Delegation
+    // Instead of binding O(n) click/dblclick listeners every time the list re-renders,
+    // we bind exactly 3 listeners to the parent container once. This reduces memory usage
+    // and improves render speed, especially for users with many saved connections.
+    $connections.on('click', 'a.load', function (e) {
+        e.stopPropagation();
+        setVals(savedConnections[$(this).data('target')]);
+        return false;
+    });
+
+    $connections.on('dblclick', 'a.load', function (e) {
+        e.stopPropagation();
+        start();
+        return false;
+    });
+
+    $connections.on('click', 'button.delete', function (e) {
+        e.stopPropagation();
+        delete savedConnections[$(this).data('name')];
+        store.set('connections', savedConnections);
+        listConnections();
+        return false;
+    });
 
     $start.click(start);
 
