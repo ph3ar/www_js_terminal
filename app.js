@@ -115,6 +115,7 @@ function setupSocketIo(httpserv) {
             term && term.kill();
         });
 
+        });
     });
 
     return io;
