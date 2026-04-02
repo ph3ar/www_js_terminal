@@ -177,9 +177,12 @@ $(document).ready(function () {
         });
         $('button.delete').click(function (e) {
             e.stopPropagation();
-            delete savedConnections[$(this).data('name')];
-            store.set('connections', savedConnections);
-            listConnections();
+            var name = $(this).data('name');
+            if (confirm('Are you sure you want to delete the connection "' + name + '"?')) {
+                delete savedConnections[name];
+                store.set('connections', savedConnections);
+                listConnections();
+            }
             return false;
         });
     }
