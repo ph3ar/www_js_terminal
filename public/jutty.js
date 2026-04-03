@@ -167,10 +167,9 @@ $(document).ready(function () {
         $connections.html(html);
     }
 
-    // ⚡ Bolt Performance Optimization: Event Delegation
-    // Instead of binding O(n) click/dblclick listeners every time the list re-renders,
-    // we bind exactly 3 listeners to the parent container once. This reduces memory usage
-    // and improves render speed, especially for users with many saved connections.
+    // Performance Optimization: Use event delegation on the parent container ($connections)
+    // instead of binding individual listeners to each list item inside a loop.
+    // This reduces binding time from O(N) to O(1) and prevents memory leaks from un-garbage-collected closures.
     $connections.on('click', 'a.load', function (e) {
         e.stopPropagation();
         setVals(savedConnections[$(this).data('target')]);
