@@ -103,6 +103,7 @@ function setupSocketIo(httpserv) {
         socket.on('disconnect', function () {
             term && term.kill();
         });
+        });
 
         });
     });

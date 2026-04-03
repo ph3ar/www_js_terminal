@@ -7,3 +7,6 @@
 ## $(date +%Y-%m-%d) - Adding Empty States for Improved First-Time UX
 **Learning:** Adding a helpful empty state when a list (like saved connections) is empty significantly improves the intuitive feel of the application for first-time users. It prevents the UI from looking broken and guides the user on what to do next. Ensure that the empty state uses existing design system classes (like Bootstrap 3's `list-group-item`, `text-muted`, `text-center`) rather than custom CSS to maintain visual consistency.
 **Action:** When working on lists or tables, always consider what happens when there is no data. Implement a clear, friendly empty state with an icon and simple instructions to guide the user. Verify its rendering and ensure it adheres to the existing UI framework.
+## 2026-04-01 - Semantic Labels for Bootstrap 3 Input Groups
+**Learning:** While `aria-describedby` can connect an input to its `input-group-addon` span, replacing the `<span>` directly with a `<label class="input-group-addon" for="...">` provides robust, native semantic association that works consistently across all screen readers without affecting Bootstrap 3's visual styling.
+**Action:** When auditing legacy Bootstrap 3 forms, upgrade `input-group-addon` spans to native `<label>` elements mapped via the `for` attribute rather than relying solely on ARIA attributes.
