@@ -14,7 +14,17 @@ const { chromium } = require('playwright');
   // Try focusing host input, type, and press Enter
   await page.fill('#host', '127.0.0.1');
   await page.fill('#user', 'root');
+
+  // Also dispatch keyup to trigger checkButtons
+  await page.evaluate(() => {
+    document.getElementById('host').dispatchEvent(new Event('keyup'));
+    document.getElementById('user').dispatchEvent(new Event('keyup'));
+  });
+
   await page.press('#user', 'Enter');
+
+  // Wait a little for async things to happen
+  await page.waitForTimeout(500);
 
   // Check if terminal is shown
   const terminalVisible = await page.isVisible('#terminal');

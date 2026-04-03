@@ -11,3 +11,7 @@
 ## 2024-05-15 - [Add Delete Confirmation Dialog]
 **Learning:** Destructive actions without confirmation can lead to accidental data loss and degrade user trust, especially in list views where users might accidentally click the delete icon.
 **Action:** Always wrap delete/destructive actions in a confirmation dialog (`confirm()`) or modal before proceeding with the data removal.
+
+## 2024-05-24 - Enter Key Support for Non-Native Forms
+**Learning:** Legacy jQuery apps often rely on `<div>` containers instead of native `<form>` tags, which breaks the native "press Enter to submit" behavior. This forces keyboard-only or screen-reader users to navigate all the way to the submit button, degrading accessibility and UX.
+**Action:** When working with form-like input containers in legacy applications, always bind a `keypress` event on the inputs to explicitly trigger the submission action when the Enter key (`e.which === 13`) is pressed.

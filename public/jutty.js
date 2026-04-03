@@ -282,6 +282,12 @@ $(document).ready(function () {
     $ssh.change(checkButtons);
     $telnet.change(checkButtons);
 
+    $('#settings input').on('keypress', function (e) {
+        if (e.which === 13 && !$start.is(':disabled')) {
+            start();
+        }
+    });
+
     checkButtons();
 
 
