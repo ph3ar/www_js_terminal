@@ -165,24 +165,27 @@ $(document).ready(function () {
             });
         }
         $connections.html(html);
-        $('a.load').click(function (e) {
-            e.stopPropagation();
-            setVals(savedConnections[$(this).data('target')]);
-            return false;
-        });
-        $('a.load').dblclick(function (e) {
-            e.stopPropagation();
-            start();
-            return false;
-        });
-        $('button.delete').click(function (e) {
-            e.stopPropagation();
-            delete savedConnections[$(this).data('name')];
-            store.set('connections', savedConnections);
-            listConnections();
-            return false;
-        });
     }
+
+    // ⚡ Bolt Optimization: Use event delegation on parent instead of binding to individual elements
+    // This reduces event binding from O(N) to O(1) and prevents memory leaks from un-garbage-collected closures
+    $connections.on('click', 'a.load', function (e) {
+        e.stopPropagation();
+        setVals(savedConnections[$(this).data('target')]);
+        return false;
+    });
+    $connections.on('dblclick', 'a.load', function (e) {
+        e.stopPropagation();
+        start();
+        return false;
+    });
+    $connections.on('click', 'button.delete', function (e) {
+        e.stopPropagation();
+        delete savedConnections[$(this).data('name')];
+        store.set('connections', savedConnections);
+        listConnections();
+        return false;
+    });
 
     $start.click(start);
 
