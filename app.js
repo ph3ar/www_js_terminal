@@ -93,6 +93,7 @@ function setupSocketIo(httpserv) {
             term.on('exit', function (code) {
                 log.info(term.pid, 'ended');
                 socket.emit('end');
+        });
                 term.kill();
                 term = null;
             });

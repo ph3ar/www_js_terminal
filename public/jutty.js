@@ -120,7 +120,7 @@ $(document).ready(function () {
         return {
             host:           $.trim($host.val()),
             user:           $.trim($user.val()),
-            type:           $ssh.is(':checked') ? 'ssh' : telnet,
+            type:           $ssh.is(':checked') ? 'ssh' : 'telnet',
             port:           $.trim($port.val()),
             key:            $.trim($key.val()),
             keyfilename:    $.trim($keyfilename.val()),
@@ -234,34 +234,34 @@ $(document).ready(function () {
         var obj = getVals();
         if (obj.type === 'ssh') {
             if (obj.host && obj.user) {
-                $start.removeAttr('disabled');
+                $start.removeAttr('disabled').removeAttr('title');
                 if (obj.name) {
-                    $save.removeAttr('disabled');
+                    $save.removeAttr('disabled').removeAttr('title');
                 } else {
-                    $save.attr('disabled', true);
+                    $save.attr('disabled', true).attr('title', 'Connection name required to save');
                 }
             } else {
-                $start.attr('disabled', true);
-                $save.attr('disabled', true);
+                $start.attr('disabled', true).attr('title', 'Host and User required for SSH');
+                $save.attr('disabled', true).attr('title', 'Host and User required for SSH');
             }
         } else {
             if (obj.host) {
-                $start.removeAttr('disabled');
+                $start.removeAttr('disabled').removeAttr('title');
                 if (obj.name) {
-                    $save.removeAttr('disabled');
+                    $save.removeAttr('disabled').removeAttr('title');
                 } else {
-                    $save.attr('disabled', true);
+                    $save.attr('disabled', true).attr('title', 'Connection name required to save');
                 }
             } else {
-                $start.attr('disabled', true);
-                $save.attr('disabled', true);
+                $start.attr('disabled', true).attr('title', 'Host required for Telnet');
+                $save.attr('disabled', true).attr('title', 'Host required for Telnet');
             }
         }
     }
 
-    $name.keyup(checkButtons);
-    $host.keyup(checkButtons);
-    $user.keyup(checkButtons);
+    $name.on('input propertychange', checkButtons);
+    $host.on('input propertychange', checkButtons);
+    $user.on('input propertychange', checkButtons);
     $ssh.change(checkButtons);
     $telnet.change(checkButtons);
 
