@@ -26,12 +26,24 @@ test.describe('Frontend Tests', () => {
         // Verify page title
         await expect(page).toHaveTitle(/PH3AR Terminal/);
 
+        // Connect button should be disabled initially
+        const startBtn = page.locator('#start');
+        await expect(startBtn).toBeDisabled();
+        await expect(startBtn).toHaveAttribute('title', 'Host and User required to connect');
+
         // Fill host and user
         await page.fill('#host', '192.168.1.100');
+        // Need to dispatch a change/keyup event as `fill` doesn't consistently trigger `keyup` in jQuery
+        await page.locator('#host').press('Tab');
+
         await page.fill('#user', 'admin');
+        await page.locator('#user').press('Tab');
+
+        // Let jQuery handle the events
+        await page.waitForTimeout(100);
 
         // Connect button should be enabled
-        const startBtn = page.locator('#start');
         await expect(startBtn).toBeEnabled();
+        await expect(startBtn).not.toHaveAttribute('title');
     });
 });
