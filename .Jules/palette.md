@@ -1,3 +1,12 @@
-## 2024-03-30 - Added tooltips to disabled buttons
-**Learning:** Adding descriptive `title` attributes to disabled buttons significantly improves accessibility and UX by explaining the specific requirements to enable them. Removing the attributes when the buttons are enabled is important.
-**Action:** When implementing form validation logic, dynamically add and remove `title` attributes on disabled submit/action buttons to provide actionable feedback to users.
+## 2024-05-24 - Accessibility on dynamically generated list items
+**Learning:** In legacy javascript apps where DOM elements are created dynamically from strings (like in `jutty.js`), accessibility attributes like `aria-label` and `title` are often missed on icon-only action buttons.
+**Action:** Always scan string concatenation blocks that generate HTML buttons in legacy apps to ensure they include proper `aria-label` and `title` attributes, especially if they only contain an icon (e.g. `glyphicon`).
+## 2024-05-24 - Accessibility on Bootstrap 3 Input Groups
+**Learning:** Older Bootstrap 3 layouts often use `input-group-addon` spans instead of native `<label>` elements for form inputs, which causes screen readers to miss the input's purpose.
+**Action:** When working with legacy Bootstrap forms, always link the `input` to its `input-group-addon` using `aria-describedby` (or `aria-labelledby`) to ensure the field has a programmatic name/description.
+## $(date +%Y-%m-%d) - Adding Empty States for Improved First-Time UX
+**Learning:** Adding a helpful empty state when a list (like saved connections) is empty significantly improves the intuitive feel of the application for first-time users. It prevents the UI from looking broken and guides the user on what to do next. Ensure that the empty state uses existing design system classes (like Bootstrap 3's `list-group-item`, `text-muted`, `text-center`) rather than custom CSS to maintain visual consistency.
+**Action:** When working on lists or tables, always consider what happens when there is no data. Implement a clear, friendly empty state with an icon and simple instructions to guide the user. Verify its rendering and ensure it adheres to the existing UI framework.
+## 2026-04-01 - Semantic Labels for Bootstrap 3 Input Groups
+**Learning:** While `aria-describedby` can connect an input to its `input-group-addon` span, replacing the `<span>` directly with a `<label class="input-group-addon" for="...">` provides robust, native semantic association that works consistently across all screen readers without affecting Bootstrap 3's visual styling.
+**Action:** When auditing legacy Bootstrap 3 forms, upgrade `input-group-addon` spans to native `<label>` elements mapped via the `for` attribute rather than relying solely on ARIA attributes.
