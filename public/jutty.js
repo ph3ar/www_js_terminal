@@ -165,24 +165,31 @@ $(document).ready(function () {
             });
         }
         $connections.html(html);
-        $('a.load').click(function (e) {
-            e.stopPropagation();
-            setVals(savedConnections[$(this).data('target')]);
-            return false;
-        });
-        $('a.load').dblclick(function (e) {
-            e.stopPropagation();
-            start();
-            return false;
-        });
-        $('button.delete').click(function (e) {
-            e.stopPropagation();
-            delete savedConnections[$(this).data('name')];
-            store.set('connections', savedConnections);
-            listConnections();
-            return false;
-        });
     }
+
+    // ⚡ Bolt Performance Optimization: Event Delegation
+    // Instead of binding O(n) click/dblclick listeners every time the list re-renders,
+    // we bind exactly 3 listeners to the parent container once. This reduces memory usage
+    // and improves render speed, especially for users with many saved connections.
+    $connections.on('click', 'a.load', function (e) {
+        e.stopPropagation();
+        setVals(savedConnections[$(this).data('target')]);
+        return false;
+    });
+
+    $connections.on('dblclick', 'a.load', function (e) {
+        e.stopPropagation();
+        start();
+        return false;
+    });
+
+    $connections.on('click', 'button.delete', function (e) {
+        e.stopPropagation();
+        delete savedConnections[$(this).data('name')];
+        store.set('connections', savedConnections);
+        listConnections();
+        return false;
+    });
 
     $start.click(start);
 
@@ -234,27 +241,27 @@ $(document).ready(function () {
         var obj = getVals();
         if (obj.type === 'ssh') {
             if (obj.host && obj.user) {
-                $start.removeAttr('disabled');
+                $start.removeAttr('disabled').removeAttr('title');
                 if (obj.name) {
-                    $save.removeAttr('disabled');
+                    $save.removeAttr('disabled').removeAttr('title');
                 } else {
-                    $save.attr('disabled', true);
+                    $save.attr('disabled', true).attr('title', 'Connection name required to save');
                 }
             } else {
-                $start.attr('disabled', true);
-                $save.attr('disabled', true);
+                $start.attr('disabled', true).attr('title', 'Host and User required to connect');
+                $save.attr('disabled', true).attr('title', 'Connection name required to save');
             }
         } else {
             if (obj.host) {
-                $start.removeAttr('disabled');
+                $start.removeAttr('disabled').removeAttr('title');
                 if (obj.name) {
-                    $save.removeAttr('disabled');
+                    $save.removeAttr('disabled').removeAttr('title');
                 } else {
-                    $save.attr('disabled', true);
+                    $save.attr('disabled', true).attr('title', 'Connection name required to save');
                 }
             } else {
-                $start.attr('disabled', true);
-                $save.attr('disabled', true);
+                $start.attr('disabled', true).attr('title', 'Host required to connect');
+                $save.attr('disabled', true).attr('title', 'Connection name required to save');
             }
         }
     }
