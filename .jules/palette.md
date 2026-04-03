@@ -1,0 +1,3 @@
+## 2025-04-03 - Keyboard Navigation and Destructive Action UX
+**Learning:** Users naturally expect form-like behavior (pressing Enter to submit) within input groups, even if those inputs aren't formally enclosed in a `<form>` tag. Additionally, allowing immediate deletion without confirmation in custom UI lists can lead to easy accidental data loss.
+**Action:** When creating grouped inputs or login/connection panels, always bind `Enter` key presses to the primary action (e.g., submit/start). For any destructive actions like deleting saved items, always include at least a native `confirm()` dialog to provide a safety net for users.

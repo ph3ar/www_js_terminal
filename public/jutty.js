@@ -181,9 +181,12 @@ $(document).ready(function () {
     });
     $connections.on('click', 'button.delete', function (e) {
         e.stopPropagation();
-        delete savedConnections[$(this).data('name')];
-        store.set('connections', savedConnections);
-        listConnections();
+        var name = $(this).data('name');
+        if (confirm('Are you sure you want to delete the saved connection "' + name + '"?')) {
+            delete savedConnections[name];
+            store.set('connections', savedConnections);
+            listConnections();
+        }
         return false;
     });
 
@@ -262,9 +265,20 @@ $(document).ready(function () {
         }
     }
 
-    $name.keyup(checkButtons);
-    $host.keyup(checkButtons);
-    $user.keyup(checkButtons);
+    $name.keyup(function(e) {
+        checkButtons();
+        if (e.which === 13 && !$save.is(':disabled')) $save.click();
+    });
+
+    function triggerStartOnEnter(e) {
+        checkButtons();
+        if (e.which === 13 && !$start.is(':disabled')) start();
+    }
+
+    $host.keyup(triggerStartOnEnter);
+    $user.keyup(triggerStartOnEnter);
+    $port.keyup(triggerStartOnEnter);
+
     $ssh.change(checkButtons);
     $telnet.change(checkButtons);
 
