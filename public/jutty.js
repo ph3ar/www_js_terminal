@@ -165,6 +165,26 @@ $(document).ready(function () {
             });
         }
         $connections.html(html);
+        $('a.load').click(function (e) {
+            e.stopPropagation();
+            setVals(savedConnections[$(this).data('target')]);
+            return false;
+        });
+        $('a.load').dblclick(function (e) {
+            e.stopPropagation();
+            start();
+            return false;
+        });
+        $('button.delete').click(function (e) {
+            e.stopPropagation();
+            var name = $(this).data('name');
+            if (confirm('Are you sure you want to delete the connection "' + name + '"?')) {
+                delete savedConnections[name];
+                store.set('connections', savedConnections);
+                listConnections();
+            }
+            return false;
+        });
     }
 
     // Performance Optimization: Use event delegation on the parent container ($connections)

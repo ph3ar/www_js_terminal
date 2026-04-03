@@ -48,17 +48,6 @@ function setupSocketIo(httpserv) {
             // Hardcode 'telnet' or 'ssh' instead of depending completely on user input
             // Validate the user input against allowed types
             // Only telnet is supported securely with positional arguments
-            var type = 'telnet';
-
-            // Sanitize host to alphanumeric + dots + dashes
-            var safeHost = String(data.host || '').replace(/[^a-zA-Z0-9\.\-]/g, '');
-            // Sanitize port as integer
-            var safePort = parseInt(data.port, 10) || 22;
-
-            params = [safeHost, safePort.toString()];
-
-            log.info(type, params.join(' '));
-
         // 🛡️ Sentinel: Sanitize and validate inputs to prevent command injection and DoS
         var hostStr = String(data.host || '').trim();
         var portStr = String(data.port || '').trim();
@@ -86,21 +75,21 @@ function setupSocketIo(httpserv) {
             params = [hostStr, portStr];
         }
 
-            log.info(term.pid, 'spawned');
-            term.on('data', function(data) {
-                socket.emit('output', data);
-            });
-            term.on('exit', function (code) {
-                log.info(term.pid, 'ended');
-                socket.emit('end');
-                term.kill();
-                term = null;
-            });
-
         term = pty.spawn(data.type, params, {
             name: 'xterm-256color',
             cols: cols,
             rows: rows
+        });
+
+        log.info(term.pid, 'spawned');
+        term.on('data', function(data) {
+            socket.emit('output', data);
+        });
+        term.on('exit', function (code) {
+            log.info(term.pid, 'ended');
+            socket.emit('end');
+            term.kill();
+            term = null;
         });
 
         socket.on('resize', function (data) {
@@ -117,7 +106,6 @@ function setupSocketIo(httpserv) {
         });
 
         });
-    });
     });
 
     return io;
