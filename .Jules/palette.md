@@ -7,3 +7,7 @@
 ## $(date +%Y-%m-%d) - Adding Empty States for Improved First-Time UX
 **Learning:** Adding a helpful empty state when a list (like saved connections) is empty significantly improves the intuitive feel of the application for first-time users. It prevents the UI from looking broken and guides the user on what to do next. Ensure that the empty state uses existing design system classes (like Bootstrap 3's `list-group-item`, `text-muted`, `text-center`) rather than custom CSS to maintain visual consistency.
 **Action:** When working on lists or tables, always consider what happens when there is no data. Implement a clear, friendly empty state with an icon and simple instructions to guide the user. Verify its rendering and ensure it adheres to the existing UI framework.
+
+## 2024-05-15 - [Add Delete Confirmation Dialog]
+**Learning:** Destructive actions without confirmation can lead to accidental data loss and degrade user trust, especially in list views where users might accidentally click the delete icon.
+**Action:** Always wrap delete/destructive actions in a confirmation dialog (`confirm()`) or modal before proceeding with the data removal.

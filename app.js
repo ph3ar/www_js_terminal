@@ -45,46 +45,39 @@ function setupSocketIo(httpserv) {
 
             var params;
 
-            // Hardcode 'telnet' or 'ssh' instead of depending completely on user input
-            // Validate the user input against allowed types
-            // Only telnet is supported securely with positional arguments
-            var type = 'telnet';
+            // 🛡️ Sentinel: Sanitize and validate inputs to prevent command injection and DoS
+            var hostStr = String(data.host || '').trim();
+            var portStr = String(data.port || '').trim();
+            var portNum = parseInt(portStr, 10);
 
-            // Sanitize host to alphanumeric + dots + dashes
-            var safeHost = String(data.host || '').replace(/[^a-zA-Z0-9\.\-]/g, '');
-            // Sanitize port as integer
-            var safePort = parseInt(data.port, 10) || 22;
+            if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(hostStr)) {
+                log.error('Invalid host input');
+                socket.emit('end');
+                return;
+            }
+
+            if (!/^\d+$/.test(portStr) || portNum < 1 || portNum > 65535) {
+                log.error('Invalid port input');
+                socket.emit('end');
+                return;
+            }
+
+            var type = 'telnet';
+            var safeHost = hostStr.replace(/[^a-zA-Z0-9\.\-]/g, '');
+            var safePort = portNum;
 
             params = [safeHost, safePort.toString()];
 
             log.info(type, params.join(' '));
 
-        // 🛡️ Sentinel: Sanitize and validate inputs to prevent command injection and DoS
-        var hostStr = String(data.host || '').trim();
-        var portStr = String(data.port || '').trim();
-        var portNum = parseInt(portStr, 10);
+            var cols = parseInt(data.col, 10) || 80;
+            var rows = parseInt(data.row, 10) || 24;
 
-        if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(hostStr)) {
-            log.error('Invalid host input');
-            socket.emit('end');
-            return;
-        }
-
-        if (!/^\d+$/.test(portStr) || portNum < 1 || portNum > 65535) {
-            log.error('Invalid port input');
-            socket.emit('end');
-            return;
-        }
-
-        var cols = parseInt(data.col, 10) || 80;
-        var rows = parseInt(data.row, 10) || 24;
-
-        if (data.type === 'telnet') {
-            params = [hostStr, portStr];
-        } else {
-            data.type = 'telnet';
-            params = [hostStr, portStr];
-        }
+            term = pty.spawn(type, params, {
+                name: 'xterm-256color',
+                cols: cols,
+                rows: rows
+            });
 
             log.info(term.pid, 'spawned');
             term.on('data', function(data) {
@@ -96,11 +89,17 @@ function setupSocketIo(httpserv) {
                 term.kill();
                 term = null;
             });
+        });
 
-        term = pty.spawn(data.type, params, {
-            name: 'xterm-256color',
-            cols: cols,
-            rows: rows
+        log.info(term.pid, 'spawned');
+        term.on('data', function(data) {
+            socket.emit('output', data);
+        });
+        term.on('exit', function (code) {
+            log.info(term.pid, 'ended');
+            socket.emit('end');
+            term.kill();
+            term = null;
         });
 
         socket.on('resize', function (data) {
@@ -114,7 +113,9 @@ function setupSocketIo(httpserv) {
         socket.on('disconnect', function () {
             term && term.kill();
         });
+        });
 
+        });
     });
 
     return io;
