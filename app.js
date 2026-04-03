@@ -45,40 +45,50 @@ function setupSocketIo(httpserv) {
 
             var params;
 
-            // Hardcode 'telnet' or 'ssh' instead of depending completely on user input
-            // Validate the user input against allowed types
-            // Only telnet is supported securely with positional arguments
-        // 🛡️ Sentinel: Sanitize and validate inputs to prevent command injection and DoS
-        var hostStr = String(data.host || '').trim();
-        var portStr = String(data.port || '').trim();
-        var portNum = parseInt(portStr, 10);
+            // 🛡️ Sentinel: Sanitize and validate inputs to prevent command injection and DoS
+            var hostStr = String(data.host || '').trim();
+            var portStr = String(data.port || '').trim();
+            var portNum = parseInt(portStr, 10);
 
-        if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(hostStr)) {
-            log.error('Invalid host input');
-            socket.emit('end');
-            return;
-        }
+            if (!/^[a-zA-Z0-9][a-zA-Z0-9.-]*$/.test(hostStr)) {
+                log.error('Invalid host input');
+                socket.emit('end');
+                return;
+            }
 
-        if (!/^\d+$/.test(portStr) || portNum < 1 || portNum > 65535) {
-            log.error('Invalid port input');
-            socket.emit('end');
-            return;
-        }
+            if (!/^\d+$/.test(portStr) || portNum < 1 || portNum > 65535) {
+                log.error('Invalid port input');
+                socket.emit('end');
+                return;
+            }
 
-        var cols = parseInt(data.col, 10) || 80;
-        var rows = parseInt(data.row, 10) || 24;
+            var type = 'telnet';
+            var safeHost = hostStr.replace(/[^a-zA-Z0-9\.\-]/g, '');
+            var safePort = portNum;
 
-        if (data.type === 'telnet') {
-            params = [hostStr, portStr];
-        } else {
-            data.type = 'telnet';
-            params = [hostStr, portStr];
-        }
+            params = [safeHost, safePort.toString()];
 
-        term = pty.spawn(data.type, params, {
-            name: 'xterm-256color',
-            cols: cols,
-            rows: rows
+            log.info(type, params.join(' '));
+
+            var cols = parseInt(data.col, 10) || 80;
+            var rows = parseInt(data.row, 10) || 24;
+
+            term = pty.spawn(type, params, {
+                name: 'xterm-256color',
+                cols: cols,
+                rows: rows
+            });
+
+            log.info(term.pid, 'spawned');
+            term.on('data', function(data) {
+                socket.emit('output', data);
+            });
+            term.on('exit', function (code) {
+                log.info(term.pid, 'ended');
+                socket.emit('end');
+                term.kill();
+                term = null;
+            });
         });
 
         log.info(term.pid, 'spawned');
