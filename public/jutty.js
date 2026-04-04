@@ -30,6 +30,10 @@ $(document).ready(function () {
     var savedConnections = store.get('connections') || {};
     listConnections();
 
+    // Auto-focus Host field on load for better UX
+    setTimeout(function() {
+        $host.focus();
+    }, 100);
 
     function Jutty(argv) {
         this.argv_ = argv;
@@ -114,6 +118,9 @@ $(document).ready(function () {
         $back.hide();
         $settings.show();
         $terminal.hide();
+        // Restore document title
+        document.title = 'PH3AR Terminal';
+        $host.focus();
     });
 
     function getVals() {
@@ -193,13 +200,29 @@ $(document).ready(function () {
     $start.click(start);
 
     function start() {
+        if ($start.is(':disabled') || $start.data('connecting')) return;
+
         var vals = getVals();
+
+        // Set loading state
+        var originalHtml = $start.html();
+        $start.data('connecting', true).prop('disabled', true);
+        $start.html('<span class="glyphicon glyphicon-hourglass" aria-hidden="true"></span> Connecting...');
+
         htermInit(function () {
             vals.col = term.screenSize.width;
             vals.row = term.screenSize.height;
             socket.emit('start', vals);
             $settings.hide();
             $terminal.show().focus();
+
+            // Dynamic tab title
+            var connName = vals.user ? vals.user + '@' + vals.host : vals.host;
+            document.title = connName + ' - PH3AR Terminal';
+
+            // Restore button state
+            $start.data('connecting', false).prop('disabled', false);
+            $start.html(originalHtml);
         });
     }
 
@@ -209,6 +232,19 @@ $(document).ready(function () {
         store.set('connections', savedConnections);
 
         listConnections();
+
+        // Show visual feedback on save
+        var $btn = $(this);
+        var originalHtml = $btn.html();
+
+        $btn.removeClass('btn-primary').addClass('btn-success')
+            .html('<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Saved!')
+            .prop('disabled', true);
+
+        setTimeout(function() {
+            $btn.removeClass('btn-success').addClass('btn-primary').html(originalHtml).prop('disabled', false);
+            checkButtons(); // Re-evaluate disabled state
+        }, 1500);
     });
 
 
@@ -237,6 +273,7 @@ $(document).ready(function () {
     });
 
     function checkButtons() {
+        if ($start.data('connecting')) return; // Don't override loading state
         var obj = getVals();
         if (obj.type === 'ssh') {
             if (obj.host && obj.user) {
