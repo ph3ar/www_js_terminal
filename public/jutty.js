@@ -209,6 +209,18 @@ $(document).ready(function () {
         store.set('connections', savedConnections);
 
         listConnections();
+
+        if ($save.data('saving')) return;
+        $save.data('saving', true);
+
+        var originalHtml = $save.html();
+        $save.html('<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Saved!');
+        $save.removeClass('btn-primary').addClass('btn-success');
+        setTimeout(function() {
+            $save.html(originalHtml);
+            $save.removeClass('btn-success').addClass('btn-primary');
+            $save.data('saving', false);
+        }, 2000);
     });
 
 
