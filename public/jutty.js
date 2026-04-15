@@ -203,12 +203,26 @@ $(document).ready(function () {
         });
     }
 
+    var originalSaveHtml = $save.html();
     $save.click(function () {
+        if ($save.data('saving')) return;
+        $save.data('saving', true);
+
         var vals = getVals();
         savedConnections[vals.name] = vals;
         store.set('connections', savedConnections);
 
         listConnections();
+
+        $save.html('<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Saved!');
+        $save.addClass('btn-success').removeClass('btn-primary');
+
+        setTimeout(function() {
+            $save.html(originalSaveHtml);
+            $save.removeClass('btn-success').addClass('btn-primary');
+            $save.data('saving', false);
+            checkButtons();
+        }, 1500);
     });
 
 
