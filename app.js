@@ -91,17 +91,6 @@ function setupSocketIo(httpserv) {
             });
         });
 
-        log.info(term.pid, 'spawned');
-        term.on('data', function(data) {
-            socket.emit('output', data);
-        });
-        term.on('exit', function (code) {
-            log.info(term.pid, 'ended');
-            socket.emit('end');
-            term.kill();
-            term = null;
-        });
-
         socket.on('resize', function (data) {
             term && term.resize(parseInt(data.col, 10) || 80, parseInt(data.row, 10) || 24);
         });
