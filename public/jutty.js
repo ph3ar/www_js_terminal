@@ -204,11 +204,29 @@ $(document).ready(function () {
     }
 
     $save.click(function () {
+        var $saveBtn = $(this);
+        if ($saveBtn.data('saving') || $saveBtn.is(':disabled')) return;
+
         var vals = getVals();
         savedConnections[vals.name] = vals;
         store.set('connections', savedConnections);
 
         listConnections();
+
+        var originalHtml = $saveBtn.html();
+        $saveBtn.data('saving', true)
+             .html('<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Saved!')
+             .removeClass('btn-primary')
+             .addClass('btn-success');
+
+        setTimeout(function() {
+            $saveBtn.html(originalHtml)
+                 .removeClass('btn-success')
+                 .addClass('btn-primary')
+                 .removeData('saving');
+
+            checkButtons();
+        }, 1500);
     });
 
 
