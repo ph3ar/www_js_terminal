@@ -15,3 +15,7 @@
 ## 2024-05-24 - Enter Key Support for Non-Native Forms
 **Learning:** Legacy jQuery apps often rely on `<div>` containers instead of native `<form>` tags, which breaks the native "press Enter to submit" behavior. This forces keyboard-only or screen-reader users to navigate all the way to the submit button, degrading accessibility and UX.
 **Action:** When working with form-like input containers in legacy applications, always bind a `keypress` event on the inputs to explicitly trigger the submission action when the Enter key (`e.which === 13`) is pressed.
+
+## 2025-04-17 - Visual Feedback on Save Button
+**Learning:** Adding temporary visual feedback (like changing a "Save" button to "Saved!" with a checkmark) greatly improves user confidence, but doing so naively can cause race conditions if the user double-clicks, leading to broken UI states or duplicate saves.
+**Action:** Always guard temporary UI states with a flag (e.g., `$el.data('saving')` or `isSaving` state) and ignore subsequent actions until the timeout completes and the state is reset.
