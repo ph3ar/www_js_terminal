@@ -204,11 +204,26 @@ $(document).ready(function () {
     }
 
     $save.click(function () {
+        if ($save.data('saving')) return;
+
         var vals = getVals();
         savedConnections[vals.name] = vals;
         store.set('connections', savedConnections);
 
         listConnections();
+
+        var originalHtml = $save.html();
+        $save.data('saving', true)
+             .html('<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Saved!')
+             .removeClass('btn-primary')
+             .addClass('btn-success');
+
+        setTimeout(function() {
+            $save.html(originalHtml)
+                 .removeClass('btn-success')
+                 .addClass('btn-primary')
+                 .removeData('saving');
+        }, 1500);
     });
 
 
