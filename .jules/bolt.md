@@ -9,3 +9,6 @@
 ## 2026-03-21 - Rate Limiting Static Assets Anti-pattern
 **Learning:** Found a performance bottleneck where `express-rate-limit` was applied globally to the `express.static` route. This meant every request for CSS, JS, and image assets invoked the rate limiter, wasting CPU/memory resources and rapidly depleting the user's limit.
 **Action:** Only apply rate limiters to main entry points (e.g., `app.get('/')` and `app.post('/')`) or API routes, and explicitly bypass rate limiting for static assets.
+## 2026-04-08 - Debounce Event Handlers and Race Conditions
+**Learning:** When debouncing input event handlers (like checking form validity on `keyup`), applying the debounce uniformly can break immediate-action workflows. For instance, if a user finishes typing and immediately presses the 'Enter' key to submit, the debounced logic has not yet executed to enable the submit action. This causes the UI to ignore the submission attempt, frustrating fast typists.
+**Action:** When debouncing form or input handlers, always include a fast-path for immediate execution on critical events like the 'Enter' key (`e.which === 13`) to prevent race conditions.

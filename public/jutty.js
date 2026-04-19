@@ -30,6 +30,10 @@ $(document).ready(function () {
     var savedConnections = store.get('connections') || {};
     listConnections();
 
+    // Auto-focus Host field on load for better UX
+    setTimeout(function() {
+        $host.focus();
+    }, 100);
 
     function Jutty(argv) {
         this.argv_ = argv;
@@ -114,6 +118,9 @@ $(document).ready(function () {
         $back.hide();
         $settings.show();
         $terminal.hide();
+        // Restore document title
+        document.title = 'PH3AR Terminal';
+        $host.focus();
     });
 
     function getVals() {
@@ -193,22 +200,54 @@ $(document).ready(function () {
     $start.click(start);
 
     function start() {
+        if ($start.is(':disabled') || $start.data('connecting')) return;
+
         var vals = getVals();
+
+        // Set loading state
+        var originalHtml = $start.html();
+        $start.data('connecting', true).prop('disabled', true);
+        $start.html('<span class="glyphicon glyphicon-hourglass" aria-hidden="true"></span> Connecting...');
+
         htermInit(function () {
             vals.col = term.screenSize.width;
             vals.row = term.screenSize.height;
             socket.emit('start', vals);
             $settings.hide();
             $terminal.show().focus();
+
+            // Dynamic tab title
+            var connName = vals.user ? vals.user + '@' + vals.host : vals.host;
+            document.title = connName + ' - PH3AR Terminal';
+
+            // Restore button state
+            $start.data('connecting', false).prop('disabled', false);
+            $start.html(originalHtml);
         });
     }
 
     $save.click(function () {
+        var $saveBtn = $(this);
+        if ($saveBtn.data('saving') || $saveBtn.is(':disabled')) return;
+
         var vals = getVals();
         savedConnections[vals.name] = vals;
         store.set('connections', savedConnections);
 
         listConnections();
+
+        // Show visual feedback on save
+        var $btn = $(this);
+        var originalHtml = $btn.html();
+
+        $btn.removeClass('btn-primary').addClass('btn-success')
+            .html('<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Saved!')
+            .prop('disabled', true);
+
+        setTimeout(function() {
+            $btn.removeClass('btn-success').addClass('btn-primary').html(originalHtml).prop('disabled', false);
+            checkButtons(); // Re-evaluate disabled state
+        }, 1500);
     });
 
 
@@ -237,6 +276,7 @@ $(document).ready(function () {
     });
 
     function checkButtons() {
+        if ($start.data('connecting')) return; // Don't override loading state
         var obj = getVals();
         if (obj.type === 'ssh') {
             if (obj.host && obj.user) {
@@ -265,22 +305,37 @@ $(document).ready(function () {
         }
     }
 
+    // ⚡ Bolt Optimization: Throttle checkButtons directly on keyup to prevent UI lag while still updating UI
+    var checkButtonsTimeout;
+    function debouncedCheckButtons() {
+        clearTimeout(checkButtonsTimeout);
+        checkButtonsTimeout = setTimeout(checkButtons, 150);
+    }
+
     $name.keyup(function(e) {
-        checkButtons();
-        if (e.which === 13 && !$save.is(':disabled')) $save.click();
+        if (e.which === 13) {
+            checkButtons();
+            if (!$save.is(':disabled')) $save.click();
+        } else {
+            debouncedCheckButtons();
+        }
     });
 
     function triggerStartOnEnter(e) {
-        checkButtons();
-        if (e.which === 13 && !$start.is(':disabled')) start();
+        if (e.which === 13) {
+            checkButtons();
+            if (!$start.is(':disabled')) start();
+        } else {
+            debouncedCheckButtons();
+        }
     }
 
     $host.keyup(triggerStartOnEnter);
     $user.keyup(triggerStartOnEnter);
     $port.keyup(triggerStartOnEnter);
 
-    $ssh.change(checkButtons);
-    $telnet.change(checkButtons);
+    $ssh.change(debouncedCheckButtons);
+    $telnet.change(debouncedCheckButtons);
 
     $('#settings input').on('keypress', function (e) {
         if (e.which === 13 && !$start.is(':disabled')) {
