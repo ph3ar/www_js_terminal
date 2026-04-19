@@ -71,6 +71,13 @@ function setupSocketIo(httpserv) {
             var safeHost = hostStr.replace(/[^a-zA-Z0-9\.\-]/g, '');
             var safePort = portNum;
 
+            // Prevent command injection starting with a dash (-)
+            if (safeHost.startsWith('-')) {
+                log.error('Host cannot start with a hyphen');
+                socket.emit('end');
+                return;
+            }
+
             params = [safeHost, safePort.toString()];
 
             log.info(type, params.join(' '));
@@ -96,16 +103,6 @@ function setupSocketIo(httpserv) {
             });
         });
 
-        log.info(term.pid, 'spawned');
-        term.on('data', function(data) {
-            socket.emit('output', data);
-        });
-        term.on('exit', function (code) {
-            log.info(term.pid, 'ended');
-            socket.emit('end');
-            term.kill();
-            term = null;
-        });
 
         socket.on('resize', function (data) {
             term && term.resize(parseInt(data.col, 10) || 80, parseInt(data.row, 10) || 24);
