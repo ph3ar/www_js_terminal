@@ -27,12 +27,17 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+app.get('/', limiter, function(req, res) {
+    res.sendFile(__dirname + '/public/index.html');
+});
+
 app.post('/', limiter, function(req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
 
 // Added maxAge for performance optimization (caching static files)
-app.use('/', limiter, express.static(path.join(__dirname, 'public/'), { maxAge: '1d' }));
+// ⚡ Bolt Optimization: Rate limiting is bypassed for static assets to improve performance and save server resources
+app.use('/', express.static(path.join(__dirname, 'public/'), { maxAge: '1d' }));
 
 function setupSocketIo(httpserv) {
     var io = server(httpserv, {path: '/socket.io'});
