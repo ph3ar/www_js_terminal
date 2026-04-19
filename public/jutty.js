@@ -283,22 +283,37 @@ $(document).ready(function () {
         }
     }
 
+    // ⚡ Bolt Optimization: Throttle checkButtons directly on keyup to prevent UI lag while still updating UI
+    var checkButtonsTimeout;
+    function debouncedCheckButtons() {
+        clearTimeout(checkButtonsTimeout);
+        checkButtonsTimeout = setTimeout(checkButtons, 150);
+    }
+
     $name.keyup(function(e) {
-        checkButtons();
-        if (e.which === 13 && !$save.is(':disabled')) $save.click();
+        if (e.which === 13) {
+            checkButtons();
+            if (!$save.is(':disabled')) $save.click();
+        } else {
+            debouncedCheckButtons();
+        }
     });
 
     function triggerStartOnEnter(e) {
-        checkButtons();
-        if (e.which === 13 && !$start.is(':disabled')) start();
+        if (e.which === 13) {
+            checkButtons();
+            if (!$start.is(':disabled')) start();
+        } else {
+            debouncedCheckButtons();
+        }
     }
 
     $host.keyup(triggerStartOnEnter);
     $user.keyup(triggerStartOnEnter);
     $port.keyup(triggerStartOnEnter);
 
-    $ssh.change(checkButtons);
-    $telnet.change(checkButtons);
+    $ssh.change(debouncedCheckButtons);
+    $telnet.change(debouncedCheckButtons);
 
     $('#settings input').on('keypress', function (e) {
         if (e.which === 13 && !$start.is(':disabled')) {
