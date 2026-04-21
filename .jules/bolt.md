@@ -12,3 +12,7 @@
 ## 2026-04-08 - Debounce Event Handlers and Race Conditions
 **Learning:** When debouncing input event handlers (like checking form validity on `keyup`), applying the debounce uniformly can break immediate-action workflows. For instance, if a user finishes typing and immediately presses the 'Enter' key to submit, the debounced logic has not yet executed to enable the submit action. This causes the UI to ignore the submission attempt, frustrating fast typists.
 **Action:** When debouncing form or input handlers, always include a fast-path for immediate execution on critical events like the 'Enter' key (`e.which === 13`) to prevent race conditions.
+
+## 2026-05-18 - Socket.io Emission Bottleneck
+**Learning:** Found a performance bottleneck in `app.js` where terminal data chunks were emitted directly to `Socket.IO` as soon as they were received via `term.on('data')`. During high-throughput terminal operations (e.g., catting a large log file or running a build script), this resulted in thousands of micro-emissions per second, which saturated the WebSocket connection, increased CPU overhead, and caused the frontend UI to freeze trying to process thousands of microscopic DOM/hterm updates.
+**Action:** When piping high-throughput stream data (like a pty output) over a WebSocket, always buffer and debounce/throttle the data chunks into a larger payload (e.g., every 10-20ms) to significantly reduce overhead and prevent UI rendering bottlenecks.

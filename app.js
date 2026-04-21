@@ -92,14 +92,38 @@ function setupSocketIo(httpserv) {
             });
 
             log.info(term.pid, 'spawned');
+
+            // ⚡ Bolt Optimization: Batch terminal output to drastically reduce Socket.IO messages
+            // This prevents UI freezes and reduces CPU overhead during high-throughput operations (e.g. catting large files)
+            var outBuffer = '';
+            var outTimeout = null;
+
+            function flushOutput() {
+                if (outBuffer) {
+                    socket.emit('output', outBuffer);
+                    outBuffer = '';
+                }
+                if (outTimeout) {
+                    clearTimeout(outTimeout);
+                    outTimeout = null;
+                }
+            }
+
             term.on('data', function(data) {
-                socket.emit('output', data);
+                outBuffer += data;
+                if (!outTimeout) {
+                    outTimeout = setTimeout(flushOutput, 10);
+                }
             });
+
             term.on('exit', function (code) {
                 log.info(term.pid, 'ended');
+                flushOutput();
                 socket.emit('end');
-                term.kill();
-                term = null;
+                if (term) {
+                    term.kill();
+                    term = null;
+                }
             });
         });
 
