@@ -165,7 +165,7 @@ $(document).ready(function () {
                    '</div>';
         } else {
             names.forEach(function (name) {
-                html += '<a class="list-group-item load" href="#" data-target="' + name + '">' + name +
+                html += '<a class="list-group-item load" href="#" role="button" data-target="' + name + '">' + name +
                     '<button class="btn btn-xs btn-danger delete" data-name="' + name + '" aria-label="Delete ' + name + ' connection" title="Delete ' + name + ' connection">' +
                     '<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>' +
                     '</button></a>';
@@ -179,6 +179,7 @@ $(document).ready(function () {
     $connections.on('click', 'a.load', function (e) {
         e.stopPropagation();
         setVals(savedConnections[$(this).data('target')]);
+        $start.focus();
         return false;
     });
     $connections.on('dblclick', 'a.load', function (e) {
@@ -280,9 +281,9 @@ $(document).ready(function () {
         var obj = getVals();
         if (obj.type === 'ssh') {
             if (obj.host && obj.user) {
-                $start.removeAttr('disabled').removeAttr('title');
+                $start.removeAttr('disabled').attr('title', 'Shortcut: Press Enter to connect');
                 if (obj.name) {
-                    $save.removeAttr('disabled').removeAttr('title');
+                    $save.removeAttr('disabled').attr('title', 'Shortcut: Press Enter to save');
                 } else {
                     $save.attr('disabled', true).attr('title', 'Connection name required to save');
                 }
@@ -292,9 +293,9 @@ $(document).ready(function () {
             }
         } else {
             if (obj.host) {
-                $start.removeAttr('disabled').removeAttr('title');
+                $start.removeAttr('disabled').attr('title', 'Shortcut: Press Enter to connect');
                 if (obj.name) {
-                    $save.removeAttr('disabled').removeAttr('title');
+                    $save.removeAttr('disabled').attr('title', 'Shortcut: Press Enter to save');
                 } else {
                     $save.attr('disabled', true).attr('title', 'Connection name required to save');
                 }

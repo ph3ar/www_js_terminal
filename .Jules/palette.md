@@ -22,3 +22,7 @@
 ## 2025-04-17 - Visual Feedback on Save Button
 **Learning:** Adding temporary visual feedback (like changing a "Save" button to "Saved!" with a checkmark) greatly improves user confidence, but doing so naively can cause race conditions if the user double-clicks, leading to broken UI states or duplicate saves.
 **Action:** Always guard temporary UI states with a flag (e.g., `$el.data('saving')` or `isSaving` state) and ignore subsequent actions until the timeout completes and the state is reset.
+
+## 2024-05-24 - Focus Management and Hidden Shortcuts
+**Learning:** When dynamic content populates a form (like clicking a saved connection), leaving focus on the triggering element or dropping it forces users to tab across the entire screen to find the next logical action. Furthermore, undocumented keyboard shortcuts (like pressing Enter to submit) remain undiscoverable unless explicitly surfaced.
+**Action:** Always map focus directly to the next logical action button after dynamic data load, and expose existing keyboard shortcuts via tooltip titles on the relevant buttons.
