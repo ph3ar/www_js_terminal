@@ -157,21 +157,36 @@ $(document).ready(function () {
 
     function listConnections() {
         var names = Object.keys(savedConnections).sort();
-        var html = '';
+        $connections.empty();
+
         if (names.length === 0) {
-            html = '<div class="list-group-item text-muted text-center p-3">' +
+            var html = '<div class="list-group-item text-muted text-center p-3">' +
                    '<span class="glyphicon glyphicon-info-sign h2 d-block mb-3" aria-hidden="true"></span><br>' +
                    'No saved connections yet.<br>Fill out the form and click "Save" to add one.' +
                    '</div>';
+            $connections.html(html);
         } else {
             names.forEach(function (name) {
-                html += '<a class="list-group-item load" href="#" data-target="' + name + '">' + name +
-                    '<button class="btn btn-xs btn-danger delete" data-name="' + name + '" aria-label="Delete ' + name + ' connection" title="Delete ' + name + ' connection">' +
-                    '<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>' +
-                    '</button></a>';
+                var $a = $('<a>', {
+                    class: 'list-group-item load',
+                    href: '#',
+                    'data-target': name,
+                    text: name
+                });
+                var $btn = $('<button>', {
+                    class: 'btn btn-xs btn-danger delete',
+                    'data-name': name,
+                    'aria-label': 'Delete ' + name + ' connection',
+                    title: 'Delete ' + name + ' connection'
+                });
+                $btn.append($('<span>', {
+                    class: 'glyphicon glyphicon-trash',
+                    'aria-hidden': 'true'
+                }));
+                $a.append($btn);
+                $connections.append($a);
             });
         }
-        $connections.html(html);
     }
 
     // ⚡ Bolt Optimization: Use event delegation on parent instead of binding to individual elements
