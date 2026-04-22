@@ -7,3 +7,8 @@
 **Vulnerability:** Double event listener registration for `term.on('data')` and `term.on('exit')` that was located outside `socket.on('start')`, combined with `safeHost` allowing leading hyphens, which could allow bypassing the regex check and injecting options to the telnet command spawned via `node-pty`.
 **Learning:** `term` is declared outside of `socket.on('start')` but double registered outside of it while `term.pid` accessing caused crashes. By only having the listener inside `start`, and also ensuring `safeHost` doesn't begin with a hyphen.
 **Prevention:** Remove duplicated code outside closures that depends on variables defined inside them, and add explicit prefix checks for arguments passed to `node-pty`.
+
+## 2024-05-15 - [DOM-based XSS in Connection List Rendering]
+**Vulnerability:** DOM-based Cross-Site Scripting (XSS) vulnerability via insecure `html +=` string concatenation inside `public/jutty.js` `listConnections()`.
+**Learning:** Even internal settings pages and localized app configurations are susceptible to XSS if inputs (like connection names) aren't properly escaped when rendering from `localStorage`. Using jQuery `.html(html_string)` on unsanitized arrays/objects allows payloads to fire immediately on loading the page.
+**Prevention:** Avoid building DOM elements with user data using string concatenation. Use jQuery programmatic element creation `$('<a>', { text: name })` which automatically handles escaping via `createTextNode`.
