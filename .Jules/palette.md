@@ -22,3 +22,7 @@
 ## 2025-04-17 - Visual Feedback on Save Button
 **Learning:** Adding temporary visual feedback (like changing a "Save" button to "Saved!" with a checkmark) greatly improves user confidence, but doing so naively can cause race conditions if the user double-clicks, leading to broken UI states or duplicate saves.
 **Action:** Always guard temporary UI states with a flag (e.g., `$el.data('saving')` or `isSaving` state) and ignore subsequent actions until the timeout completes and the state is reset.
+
+## 2025-04-17 - Screen Reader Support for Dynamically Updating Buttons
+**Learning:** Buttons that temporarily change text (e.g., from "Connect" to "Connecting..." or "Save" to "Saved!") do not announce these changes to screen readers by default. This leaves visually impaired users unaware of async operations or success feedback.
+**Action:** Always add `aria-live="polite"` to buttons that will have their inner text dynamically updated via JavaScript. This ensures that screen readers will announce the state changes.
