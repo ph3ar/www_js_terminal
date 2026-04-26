@@ -27,12 +27,15 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+// ⚡ Bolt Optimization: Load static index.html into memory at startup to eliminate disk I/O on every request
+var indexHtmlCache = fs.readFileSync(__dirname + '/public/index.html', 'utf8');
+
 app.get('/', limiter, function(req, res) {
-    res.sendFile(__dirname + '/public/index.html');
+    res.send(indexHtmlCache);
 });
 
 app.post('/', limiter, function(req, res) {
-    res.sendFile(__dirname + '/public/index.html');
+    res.send(indexHtmlCache);
 });
 
 // Added maxAge for performance optimization (caching static files)
