@@ -3,7 +3,12 @@
 **Learning:** Even though `pty.spawn` doesn't execute a shell directly, passing completely arbitrary arguments starting with hyphens can invoke dangerous features of the underlying program (e.g. telnet).
 **Prevention:** Always sanitize and validate socket inputs using strict regex (e.g., ensuring hostnames start with alphanumeric characters `^[a-zA-Z0-9]`) and explicitly parsing/bounding numbers before passing them to OS-level spawn commands.
 
-## 2026-04-17 - [Unhandled Promise/Undefined crash in Socket.io connection]
-**Vulnerability:** Unauthenticated Denial of Service (DoS).
-**Learning:** If event listeners and properties of a scoped variable (e.g., `term.pid` and `term.on('data')`) are accessed directly inside a `connection` event loop *before* that variable is safely initialized via an explicit client command (e.g., `start`), a client can crash the server merely by opening a connection. The event loop expects `term` to exist immediately.
-**Prevention:** Always wrap listeners or initializations that depend on dynamically spawned external processes in null checks (`if (term) { ... }`) to gracefully fail or avoid dereferencing `undefined` when the object is uninitialized.
+## 2024-04-10 - [Duplicate terminal event listeners and unsanitized parameters causing command injection bypass]
+**Vulnerability:** Double event listener registration for `term.on('data')` and `term.on('exit')` that was located outside `socket.on('start')`, combined with `safeHost` allowing leading hyphens, which could allow bypassing the regex check and injecting options to the telnet command spawned via `node-pty`.
+**Learning:** `term` is declared outside of `socket.on('start')` but double registered outside of it while `term.pid` accessing caused crashes. By only having the listener inside `start`, and also ensuring `safeHost` doesn't begin with a hyphen.
+**Prevention:** Remove duplicated code outside closures that depends on variables defined inside them, and add explicit prefix checks for arguments passed to `node-pty`.
+
+## 2024-05-24 - [DOM-based XSS in jQuery HTML concatenation]
+**Vulnerability:** DOM-based Cross-Site Scripting (XSS) via jQuery `html()` manipulation in `public/jutty.js`. The `listConnections` function iterates over user-controlled connection names and builds raw HTML strings containing those names (`'<a ... data-target="' + name + '">' + name + ...`). If a user creates a connection with a malicious name (like `<script>alert(1)</script>`), the script is executed when the connection list is rendered.
+**Learning:** Concatenating user inputs directly into HTML strings and assigning them via `.html()`, `.append()`, or similar DOM injection points easily causes DOM-based XSS, even for seemingly innocuous "names".
+**Prevention:** Avoid constructing HTML markup with user inputs using string concatenation. Instead, use jQuery's programmatic element creation (e.g., `$('<a>', { text: name, class: '...' })`), which safely escapes text content and attributes automatically.

@@ -30,6 +30,10 @@ $(document).ready(function () {
     var savedConnections = store.get('connections') || {};
     listConnections();
 
+    // Auto-focus Host field on load for better UX
+    setTimeout(function() {
+        $host.focus();
+    }, 100);
 
     function Jutty(argv) {
         this.argv_ = argv;
@@ -114,13 +118,16 @@ $(document).ready(function () {
         $back.hide();
         $settings.show();
         $terminal.hide();
+        // Restore document title
+        document.title = 'PH3AR Terminal';
+        $host.focus();
     });
 
     function getVals() {
         return {
             host:           $.trim($host.val()),
             user:           $.trim($user.val()),
-            type:           $ssh.is(':checked') ? 'ssh' : 'telnet',
+            type:           $ssh.is(':checked') ? 'ssh' : telnet,
             port:           $.trim($port.val()),
             key:            $.trim($key.val()),
             keyfilename:    $.trim($keyfilename.val()),
@@ -150,21 +157,36 @@ $(document).ready(function () {
 
     function listConnections() {
         var names = Object.keys(savedConnections).sort();
-        var html = '';
+        $connections.empty();
+
         if (names.length === 0) {
-            html = '<div class="list-group-item text-muted text-center p-3">' +
+            var html = '<div class="list-group-item text-muted text-center p-3">' +
                    '<span class="glyphicon glyphicon-info-sign h2 d-block mb-3" aria-hidden="true"></span><br>' +
                    'No saved connections yet.<br>Fill out the form and click "Save" to add one.' +
                    '</div>';
+            $connections.html(html);
         } else {
             names.forEach(function (name) {
-                html += '<a class="list-group-item load" href="#" role="button" data-target="' + name + '">' + name +
-                    '<button class="btn btn-xs btn-danger delete" data-name="' + name + '" aria-label="Delete ' + name + ' connection" title="Delete ' + name + ' connection">' +
-                    '<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>' +
-                    '</button></a>';
+                var $a = $('<a>', {
+                    class: 'list-group-item load',
+                    href: '#',
+                    'data-target': name,
+                    text: name
+                });
+                var $btn = $('<button>', {
+                    class: 'btn btn-xs btn-danger delete',
+                    'data-name': name,
+                    'aria-label': 'Delete ' + name + ' connection',
+                    title: 'Delete ' + name + ' connection'
+                });
+                $btn.append($('<span>', {
+                    class: 'glyphicon glyphicon-trash',
+                    'aria-hidden': 'true'
+                }));
+                $a.append($btn);
+                $connections.append($a);
             });
         }
-        $connections.html(html);
     }
 
     // ⚡ Bolt Optimization: Use event delegation on parent instead of binding to individual elements
@@ -172,7 +194,6 @@ $(document).ready(function () {
     $connections.on('click', 'a.load', function (e) {
         e.stopPropagation();
         setVals(savedConnections[$(this).data('target')]);
-        $start.focus();
         return false;
     });
     $connections.on('dblclick', 'a.load', function (e) {
@@ -194,20 +215,35 @@ $(document).ready(function () {
     $start.click(start);
 
     function start() {
+        if ($start.is(':disabled') || $start.data('connecting')) return;
+
         var vals = getVals();
+
+        // Set loading state
+        var originalHtml = $start.html();
+        $start.data('connecting', true).prop('disabled', true);
+        $start.html('<span class="glyphicon glyphicon-hourglass" aria-hidden="true"></span> Connecting...');
+
         htermInit(function () {
             vals.col = term.screenSize.width;
             vals.row = term.screenSize.height;
             socket.emit('start', vals);
             $settings.hide();
             $terminal.show().focus();
+
+            // Dynamic tab title
+            var connName = vals.user ? vals.user + '@' + vals.host : vals.host;
+            document.title = connName + ' - PH3AR Terminal';
+
+            // Restore button state
+            $start.data('connecting', false).prop('disabled', false);
+            $start.html(originalHtml);
         });
     }
 
-    var originalSaveHtml = $save.html();
     $save.click(function () {
-        if ($save.data('saving')) return;
-        $save.data('saving', true);
+        var $saveBtn = $(this);
+        if ($saveBtn.data('saving') || $saveBtn.is(':disabled')) return;
 
         var vals = getVals();
         savedConnections[vals.name] = vals;
@@ -215,14 +251,17 @@ $(document).ready(function () {
 
         listConnections();
 
-        $save.html('<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Saved!');
-        $save.addClass('btn-success').removeClass('btn-primary');
+        // Show visual feedback on save
+        var $btn = $(this);
+        var originalHtml = $btn.html();
+
+        $btn.removeClass('btn-primary').addClass('btn-success')
+            .html('<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Saved!')
+            .prop('disabled', true);
 
         setTimeout(function() {
-            $save.html(originalSaveHtml);
-            $save.removeClass('btn-success').addClass('btn-primary');
-            $save.data('saving', false);
-            checkButtons();
+            $btn.removeClass('btn-success').addClass('btn-primary').html(originalHtml).prop('disabled', false);
+            checkButtons(); // Re-evaluate disabled state
         }, 1500);
     });
 
@@ -252,12 +291,13 @@ $(document).ready(function () {
     });
 
     function checkButtons() {
+        if ($start.data('connecting')) return; // Don't override loading state
         var obj = getVals();
         if (obj.type === 'ssh') {
             if (obj.host && obj.user) {
-                $start.removeAttr('disabled').attr('title', 'Shortcut: Press Enter to connect');
+                $start.removeAttr('disabled').removeAttr('title');
                 if (obj.name) {
-                    $save.removeAttr('disabled').attr('title', 'Shortcut: Press Enter to save');
+                    $save.removeAttr('disabled').removeAttr('title');
                 } else {
                     $save.attr('disabled', true).attr('title', 'Connection name required to save');
                 }
@@ -267,9 +307,9 @@ $(document).ready(function () {
             }
         } else {
             if (obj.host) {
-                $start.removeAttr('disabled').attr('title', 'Shortcut: Press Enter to connect');
+                $start.removeAttr('disabled').removeAttr('title');
                 if (obj.name) {
-                    $save.removeAttr('disabled').attr('title', 'Shortcut: Press Enter to save');
+                    $save.removeAttr('disabled').removeAttr('title');
                 } else {
                     $save.attr('disabled', true).attr('title', 'Connection name required to save');
                 }
@@ -280,27 +320,29 @@ $(document).ready(function () {
         }
     }
 
-    // ⚡ Bolt Optimization: Debounce input validation to avoid expensive state checks on every keystroke
+    // ⚡ Bolt Optimization: Throttle checkButtons directly on keyup to prevent UI lag while still updating UI
     var checkButtonsTimeout;
-    function debouncedCheckButtons(e) {
-        // Execute immediately if Enter is pressed (sync action)
-        if (e && e.which === 13) {
-            clearTimeout(checkButtonsTimeout);
-            checkButtons();
-            return;
-        }
+    function debouncedCheckButtons() {
         clearTimeout(checkButtonsTimeout);
-        checkButtonsTimeout = setTimeout(checkButtons, 200);
+        checkButtonsTimeout = setTimeout(checkButtons, 150);
     }
 
     $name.keyup(function(e) {
-        debouncedCheckButtons(e);
-        if (e.which === 13 && !$save.is(':disabled')) $save.click();
+        if (e.which === 13) {
+            checkButtons();
+            if (!$save.is(':disabled')) $save.click();
+        } else {
+            debouncedCheckButtons();
+        }
     });
 
     function triggerStartOnEnter(e) {
-        debouncedCheckButtons(e);
-        if (e.which === 13 && !$start.is(':disabled')) start();
+        if (e.which === 13) {
+            checkButtons();
+            if (!$start.is(':disabled')) start();
+        } else {
+            debouncedCheckButtons();
+        }
     }
 
     $host.keyup(triggerStartOnEnter);
