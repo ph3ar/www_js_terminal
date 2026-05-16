@@ -27,16 +27,16 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-// ⚡ Bolt Optimization: Load heavily requested static HTML synchronously into memory at application startup
-// instead of relying on Express's res.sendFile on every request. This eliminates disk I/O bottlenecks.
-var indexHtml = fs.readFileSync(path.join(__dirname, 'public', 'index.html'), 'utf8');
+// ⚡ Bolt Optimization: Load heavily requested static HTML into memory at startup
+// This eliminates disk I/O per request on the main route.
+var indexHtmlCache = fs.readFileSync(path.join(__dirname, 'public/index.html'), 'utf8');
 
 app.get('/', limiter, function(req, res) {
-    res.send(indexHtml);
+    res.send(indexHtmlCache);
 });
 
 app.post('/', limiter, function(req, res) {
-    res.send(indexHtml);
+    res.send(indexHtmlCache);
 });
 
 // Added maxAge for performance optimization (caching static files)

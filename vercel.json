@@ -8,11 +8,11 @@
   ],
   "rewrites": [
     {
-      "source": "/socket.io/(.*)",
+      "source": "/(.*)",
       "destination": "/api/index.js"
     },
     {
-      "source": "/(.*)",
+      "source": "/socket.io/(.*)",
       "destination": "/api/index.js"
     }
   ]

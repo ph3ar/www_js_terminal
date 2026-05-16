@@ -53,7 +53,18 @@ describe('App Tests', function () {
         done();
     });
 
-    it('should serve index.html on POST /', function (done) {
+    it('should serve index.html on GET / from memory cache', function (done) {
+        request(server)
+            .get('/')
+            .expect(200)
+            .end(function (err, res) {
+                if (err) return done(err);
+                expect(res.text).to.include('<title>PH3AR Terminal</title>');
+                done();
+            });
+    });
+
+    it('should serve index.html on POST / from memory cache', function (done) {
         request(server)
             .post('/')
             .expect(200)
