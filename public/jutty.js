@@ -150,41 +150,21 @@ $(document).ready(function () {
 
     function listConnections() {
         var names = Object.keys(savedConnections).sort();
-        $connections.empty();
-
+        var html = '';
         if (names.length === 0) {
-            $connections.append(
-                $('<div>', {
-                    class: 'list-group-item text-muted text-center p-3',
-                    html: '<span class="glyphicon glyphicon-info-sign h2 d-block mb-3" aria-hidden="true"></span><br>No saved connections yet.<br>Fill out the form and click "Save" to add one.'
-                })
-            );
+            html = '<div class="list-group-item text-muted text-center p-3">' +
+                   '<span class="glyphicon glyphicon-info-sign h2 d-block mb-3" aria-hidden="true"></span><br>' +
+                   'No saved connections yet.<br>Fill out the form and click "Save" to add one.' +
+                   '</div>';
         } else {
             names.forEach(function (name) {
-                var $a = $('<a>', {
-                    class: 'list-group-item load',
-                    href: '#',
-                    'data-target': name,
-                    text: name
-                });
-
-                var $btn = $('<button>', {
-                    class: 'btn btn-xs btn-danger delete',
-                    'data-name': name,
-                    'aria-label': 'Delete ' + name + ' connection',
-                    title: 'Delete ' + name + ' connection'
-                });
-
-                var $icon = $('<span>', {
-                    class: 'glyphicon glyphicon-trash',
-                    'aria-hidden': 'true'
-                });
-
-                $btn.append($icon);
-                $a.append($btn);
-                $connections.append($a);
+                html += '<a class="list-group-item load" href="#" data-target="' + name + '">' + name +
+                    '<button class="btn btn-xs btn-danger delete" data-name="' + name + '" aria-label="Delete ' + name + ' connection" title="Delete ' + name + ' connection">' +
+                    '<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>' +
+                    '</button></a>';
             });
         }
+        $connections.html(html);
     }
 
     // ⚡ Bolt Optimization: Use event delegation on parent instead of binding to individual elements
@@ -223,6 +203,7 @@ $(document).ready(function () {
         });
     }
 
+    var originalSaveHtml = $save.html();
     $save.click(function () {
         if ($save.data('saving')) return;
         $save.data('saving', true);
@@ -233,12 +214,14 @@ $(document).ready(function () {
 
         listConnections();
 
-        var originalHtml = $save.html();
-        $save.html('<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Saved!').addClass('btn-success').removeClass('btn-primary');
+        $save.html('<span class="glyphicon glyphicon-ok" aria-hidden="true"></span> Saved!');
+        $save.addClass('btn-success').removeClass('btn-primary');
 
         setTimeout(function() {
-            $save.html(originalHtml).removeClass('btn-success').addClass('btn-primary');
+            $save.html(originalSaveHtml);
+            $save.removeClass('btn-success').addClass('btn-primary');
             $save.data('saving', false);
+            checkButtons();
         }, 1500);
     });
 
