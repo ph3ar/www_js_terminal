@@ -120,7 +120,7 @@ $(document).ready(function () {
         return {
             host:           $.trim($host.val()),
             user:           $.trim($user.val()),
-            type:           $ssh.is(':checked') ? 'ssh' : telnet,
+            type:           $ssh.is(':checked') ? 'ssh' : 'telnet',
             port:           $.trim($port.val()),
             key:            $.trim($key.val()),
             keyfilename:    $.trim($keyfilename.val()),
@@ -280,13 +280,26 @@ $(document).ready(function () {
         }
     }
 
+    // ⚡ Bolt Optimization: Debounce input validation to avoid expensive state checks on every keystroke
+    var checkButtonsTimeout;
+    function debouncedCheckButtons(e) {
+        // Execute immediately if Enter is pressed (sync action)
+        if (e && e.which === 13) {
+            clearTimeout(checkButtonsTimeout);
+            checkButtons();
+            return;
+        }
+        clearTimeout(checkButtonsTimeout);
+        checkButtonsTimeout = setTimeout(checkButtons, 200);
+    }
+
     $name.keyup(function(e) {
-        checkButtons();
+        debouncedCheckButtons(e);
         if (e.which === 13 && !$save.is(':disabled')) $save.click();
     });
 
     function triggerStartOnEnter(e) {
-        checkButtons();
+        debouncedCheckButtons(e);
         if (e.which === 13 && !$start.is(':disabled')) start();
     }
 
@@ -294,8 +307,8 @@ $(document).ready(function () {
     $user.keyup(triggerStartOnEnter);
     $port.keyup(triggerStartOnEnter);
 
-    $ssh.change(checkButtons);
-    $telnet.change(checkButtons);
+    $ssh.change(debouncedCheckButtons);
+    $telnet.change(debouncedCheckButtons);
 
     $('#settings input').on('keypress', function (e) {
         if (e.which === 13 && !$start.is(':disabled')) {
