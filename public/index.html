@@ -63,8 +63,15 @@
 <body>
 
     <div id="disconnect">
-        <div class="alert alert-danger" role="alert">
-            <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Socket.io disconnected
+        <br><br><br><br><br>
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 col-md-offset-3">
+                    <div class="alert alert-danger text-center" role="alert">
+                        <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Socket.io disconnected
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -106,7 +113,7 @@
                             <div class="col-lg-4 col-md-4 col-xs-4">
                                 <div class="input-group">
                                     <label class="input-group-addon" for="port" id="addon-port">Port</label>
-                                    <input type="number" id="port" class="form-control" aria-describedby="addon-port" placeholder="22">
+                                    <input type="number" id="port" class="form-control" aria-describedby="addon-port" placeholder="22" min="1" max="65535">
                                 </div>
                             </div>
                         </div>
@@ -115,7 +122,7 @@
                             <div class="col-lg-12 col-md-12 col-xs-12">
                                 <div class="input-group">
                                     <label class="input-group-addon" for="user" id="addon-user">User</label>
-                                    <input type="text" class="form-control" id="user" aria-describedby="addon-user" placeholder="e.g. root">
+                                    <input type="text" class="form-control" id="user" aria-describedby="addon-user" placeholder="e.g. root" autocomplete="username">
                                 </div>
                             </div>
                         </div>
@@ -175,7 +182,9 @@
     </div>
 
     <div id="back">
-        <button id="backbutton" class="btn btn-lg btn-warning">Back</button>
+        <button id="backbutton" class="btn btn-lg btn-warning" aria-label="Return to Settings Menu">
+            <span class="glyphicon glyphicon-arrow-left" aria-hidden="true"></span> Back
+        </button>
     </div>
 
     <div id="terminal"></div>
