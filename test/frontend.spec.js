@@ -39,8 +39,8 @@ test.describe('Frontend Tests', () => {
         await page.fill('#user', 'admin');
         await page.locator('#user').press('Tab');
 
-        // Let jQuery handle the events
-        await page.waitForTimeout(100);
+        // The debounce in jutty.js waits 150ms before enabling the button
+        await page.waitForTimeout(200);
 
         // Connect button should be enabled
         await expect(startBtn).toBeEnabled();

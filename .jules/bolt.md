@@ -16,3 +16,8 @@
 ## 2026-05-18 - Socket.io Emission Bottleneck
 **Learning:** Found a performance bottleneck in `app.js` where terminal data chunks were emitted directly to `Socket.IO` as soon as they were received via `term.on('data')`. During high-throughput terminal operations (e.g., catting a large log file or running a build script), this resulted in thousands of micro-emissions per second, which saturated the WebSocket connection, increased CPU overhead, and caused the frontend UI to freeze trying to process thousands of microscopic DOM/hterm updates.
 **Action:** When piping high-throughput stream data (like a pty output) over a WebSocket, always buffer and debounce/throttle the data chunks into a larger payload (e.g., every 10-20ms) to significantly reduce overhead and prevent UI rendering bottlenecks.
+## 2024-05-18 - Synchronous Static File Loading
+
+**Learning:** When serving heavily requested, immutable static HTML files (like the primary `index.html`), relying on disk I/O (`res.sendFile`) per request creates a bottleneck under high concurrency. Express's `res.send()` seamlessly handles strings with the correct `text/html` headers.
+
+**Action:** Load static HTML synchronously at application startup using `fs.readFileSync` and serve it directly from a memory variable to drastically increase throughput and eliminate disk I/O constraints.

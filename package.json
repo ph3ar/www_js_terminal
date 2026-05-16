@@ -12,7 +12,7 @@
     "yalm": "^4.0.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "^1.59.1",
     "chai": "^4.5.0",
     "grunt": "^1.5",
     "grunt-contrib-clean": "^0.6",
