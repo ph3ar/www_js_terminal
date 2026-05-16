@@ -27,16 +27,15 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-// ⚡ Bolt Optimization: Pre-load index.html synchronously at startup to eliminate disk I/O on every request.
-// This significantly improves response times for the main route, especially under concurrent load.
-var indexHtml = fs.readFileSync(path.join(__dirname, 'public/index.html'), 'utf8');
+// ⚡ Bolt Optimization: Load static index.html into memory at startup to eliminate disk I/O on every request
+var indexHtmlCache = fs.readFileSync(__dirname + '/public/index.html', 'utf8');
 
 app.get('/', limiter, function(req, res) {
-    res.type('html').send(indexHtml);
+    res.send(indexHtmlCache);
 });
 
 app.post('/', limiter, function(req, res) {
-    res.type('html').send(indexHtml);
+    res.send(indexHtmlCache);
 });
 
 // Added maxAge for performance optimization (caching static files)
