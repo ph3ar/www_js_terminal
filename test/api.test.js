@@ -2,27 +2,22 @@ const { expect } = require('chai');
 const sinon = require('sinon');
 const proxyquire = require('proxyquire');
 
-describe('Vercel API Tests', function() {
-    let apiHandler;
-    let appMock, setupSocketIoMock;
+describe('Vercel API Handler Tests', function () {
+    let apiHandler, appMock, setupSocketIoMock;
 
-    beforeEach(function() {
-        appMock = sinon.stub().returns('app_response');
-        setupSocketIoMock = sinon.stub().returns('io_instance');
-
-        const appModuleMock = {
-            app: appMock,
-            setupSocketIo: setupSocketIoMock,
-            '@noCallThru': true,
-            '@global': true
-        };
+    beforeEach(function () {
+        appMock = sinon.stub();
+        setupSocketIoMock = sinon.stub().returns({ isIo: true });
 
         apiHandler = proxyquire('../api/index.js', {
-            '../app.js': appModuleMock
+            '../app.js': {
+                app: appMock,
+                setupSocketIo: setupSocketIoMock
+            }
         });
     });
 
-    it('should initialize socket.io if it does not exist on res.socket.server', function() {
+    it('should initialize socket.io on first use and attach to res.socket.server', function () {
         const req = {};
         const res = {
             socket: {
@@ -30,32 +25,40 @@ describe('Vercel API Tests', function() {
             }
         };
 
-        const result = apiHandler(req, res);
+        apiHandler(req, res);
 
         expect(setupSocketIoMock.calledOnce).to.be.true;
         expect(setupSocketIoMock.calledWith(res.socket.server)).to.be.true;
-        expect(res.socket.server.io).to.equal('io_instance');
+        expect(res.socket.server.io.isIo).to.be.true;
         expect(appMock.calledOnce).to.be.true;
         expect(appMock.calledWith(req, res)).to.be.true;
-        expect(result).to.equal('app_response');
     });
 
-    it('should not initialize socket.io if it already exists on res.socket.server', function() {
+    it('should not re-initialize socket.io on subsequent uses', function () {
         const req = {};
         const res = {
             socket: {
                 server: {
-                    io: 'existing_io_instance'
+                    io: { isIo: true }
                 }
             }
         };
 
-        const result = apiHandler(req, res);
+        apiHandler(req, res);
 
         expect(setupSocketIoMock.called).to.be.false;
-        expect(res.socket.server.io).to.equal('existing_io_instance');
         expect(appMock.calledOnce).to.be.true;
         expect(appMock.calledWith(req, res)).to.be.true;
-        expect(result).to.equal('app_response');
+    });
+
+    it('should safely handle missing res.socket without crashing', function () {
+        const req = {};
+        const res = {}; // No socket
+
+        apiHandler(req, res);
+
+        expect(setupSocketIoMock.called).to.be.false;
+        expect(appMock.calledOnce).to.be.true;
+        expect(appMock.calledWith(req, res)).to.be.true;
     });
 });

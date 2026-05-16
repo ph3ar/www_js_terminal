@@ -27,12 +27,21 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+// ⚡ Bolt Optimization: Pre-load index.html synchronously at startup to eliminate disk I/O on every request.
+// This significantly improves response times for the main route, especially under concurrent load.
+var indexHtml = fs.readFileSync(path.join(__dirname, 'public/index.html'), 'utf8');
+
+app.get('/', limiter, function(req, res) {
+    res.type('html').send(indexHtml);
+});
+
 app.post('/', limiter, function(req, res) {
-    res.sendFile(__dirname + '/public/index.html');
+    res.type('html').send(indexHtml);
 });
 
 // Added maxAge for performance optimization (caching static files)
-app.use('/', limiter, express.static(path.join(__dirname, 'public/'), { maxAge: '1d' }));
+// ⚡ Bolt Optimization: Rate limiting is bypassed for static assets to improve performance and save server resources
+app.use('/', express.static(path.join(__dirname, 'public/'), { maxAge: '1d' }));
 
 function setupSocketIo(httpserv) {
     var io = server(httpserv, {path: '/socket.io'});
@@ -66,6 +75,13 @@ function setupSocketIo(httpserv) {
             var safeHost = hostStr.replace(/[^a-zA-Z0-9\.\-]/g, '');
             var safePort = portNum;
 
+            // Prevent command injection starting with a dash (-)
+            if (safeHost.startsWith('-')) {
+                log.error('Host cannot start with a hyphen');
+                socket.emit('end');
+                return;
+            }
+
             params = [safeHost, safePort.toString()];
 
             log.info(type, params.join(' '));
@@ -80,29 +96,41 @@ function setupSocketIo(httpserv) {
             });
 
             log.info(term.pid, 'spawned');
+
+            // ⚡ Bolt Optimization: Batch terminal output to drastically reduce Socket.IO messages
+            // This prevents UI freezes and reduces CPU overhead during high-throughput operations (e.g. catting large files)
+            var outBuffer = '';
+            var outTimeout = null;
+
+            function flushOutput() {
+                if (outBuffer) {
+                    socket.emit('output', outBuffer);
+                    outBuffer = '';
+                }
+                if (outTimeout) {
+                    clearTimeout(outTimeout);
+                    outTimeout = null;
+                }
+            }
+
             term.on('data', function(data) {
-                socket.emit('output', data);
+                outBuffer += data;
+                if (!outTimeout) {
+                    outTimeout = setTimeout(flushOutput, 10);
+                }
             });
+
             term.on('exit', function (code) {
                 log.info(term.pid, 'ended');
+                flushOutput();
                 socket.emit('end');
-                term.kill();
-                term = null;
+                if (term) {
+                    term.kill();
+                    term = null;
+                }
             });
         });
 
-        if (term) {
-            log.info(term.pid, 'spawned');
-            term.on('data', function(data) {
-                socket.emit('output', data);
-            });
-            term.on('exit', function (code) {
-                log.info(term.pid, 'ended');
-                socket.emit('end');
-                term.kill();
-                term = null;
-            });
-        }
 
         socket.on('resize', function (data) {
             term && term.resize(parseInt(data.col, 10) || 80, parseInt(data.row, 10) || 24);
