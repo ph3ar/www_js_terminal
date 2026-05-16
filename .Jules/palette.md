@@ -15,6 +15,14 @@
 ## 2024-05-24 - Enter Key Support for Non-Native Forms
 **Learning:** Legacy jQuery apps often rely on `<div>` containers instead of native `<form>` tags, which breaks the native "press Enter to submit" behavior. This forces keyboard-only or screen-reader users to navigate all the way to the submit button, degrading accessibility and UX.
 **Action:** When working with form-like input containers in legacy applications, always bind a `keypress` event on the inputs to explicitly trigger the submission action when the Enter key (`e.which === 13`) is pressed.
-## 2026-04-15 - Adding Visual Feedback to Save Actions
-**Learning:** In legacy jQuery apps, actions like saving data to localStorage often happen instantly without any visual feedback, leaving users unsure if the action succeeded. A simple, temporary state change (e.g., text changing to "Saved!" and button disabling) significantly improves confidence.
-**Action:** When implementing save actions or form submissions, always provide temporary visual confirmation of success and disable the button during this period to prevent duplicate submissions or race conditions.
+## 2024-05-19 - Temporary visual feedback state on Save button
+**Learning:** Added a "Saved!" feedback state to the connection Save button. When implementing temporary visual feedback states on UI elements, always guard against race conditions and duplicate actions by checking a state flag (like `$el.data('saving')`) or checking if the button is disabled during the active timeout period. Caching the original HTML before modifying it and restoring it afterwards is an effective way to handle the transition safely.
+**Action:** When adding similar temporary feedback to other interactive elements, apply the pattern of guarding against redundant clicks, caching state, and cleanly restoring it via a timeout, while updating any dependent UI state using the existing validation functions (like `checkButtons()`).
+
+## 2025-04-17 - Visual Feedback on Save Button
+**Learning:** Adding temporary visual feedback (like changing a "Save" button to "Saved!" with a checkmark) greatly improves user confidence, but doing so naively can cause race conditions if the user double-clicks, leading to broken UI states or duplicate saves.
+**Action:** Always guard temporary UI states with a flag (e.g., `$el.data('saving')` or `isSaving` state) and ignore subsequent actions until the timeout completes and the state is reset.
+
+## 2024-05-24 - Focus Management and Hidden Shortcuts
+**Learning:** When dynamic content populates a form (like clicking a saved connection), leaving focus on the triggering element or dropping it forces users to tab across the entire screen to find the next logical action. Furthermore, undocumented keyboard shortcuts (like pressing Enter to submit) remain undiscoverable unless explicitly surfaced.
+**Action:** Always map focus directly to the next logical action button after dynamic data load, and expose existing keyboard shortcuts via tooltip titles on the relevant buttons.
