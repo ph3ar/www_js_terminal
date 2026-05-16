@@ -15,10 +15,7 @@
 ## 2024-05-24 - Enter Key Support for Non-Native Forms
 **Learning:** Legacy jQuery apps often rely on `<div>` containers instead of native `<form>` tags, which breaks the native "press Enter to submit" behavior. This forces keyboard-only or screen-reader users to navigate all the way to the submit button, degrading accessibility and UX.
 **Action:** When working with form-like input containers in legacy applications, always bind a `keypress` event on the inputs to explicitly trigger the submission action when the Enter key (`e.which === 13`) is pressed.
-## 2024-05-19 - Temporary visual feedback state on Save button
-**Learning:** Added a "Saved!" feedback state to the connection Save button. When implementing temporary visual feedback states on UI elements, always guard against race conditions and duplicate actions by checking a state flag (like `$el.data('saving')`) or checking if the button is disabled during the active timeout period. Caching the original HTML before modifying it and restoring it afterwards is an effective way to handle the transition safely.
-**Action:** When adding similar temporary feedback to other interactive elements, apply the pattern of guarding against redundant clicks, caching state, and cleanly restoring it via a timeout, while updating any dependent UI state using the existing validation functions (like `checkButtons()`).
 
-## 2025-04-17 - Visual Feedback on Save Button
-**Learning:** Adding temporary visual feedback (like changing a "Save" button to "Saved!" with a checkmark) greatly improves user confidence, but doing so naively can cause race conditions if the user double-clicks, leading to broken UI states or duplicate saves.
-**Action:** Always guard temporary UI states with a flag (e.g., `$el.data('saving')` or `isSaving` state) and ignore subsequent actions until the timeout completes and the state is reset.
+## 2024-05-25 - [Add feedback to Save action]
+**Learning:** Saving an item in a form sometimes happens instantaneously and silently, which leaves the user wondering if their action succeeded, especially if the saved item appears further down on the page (or on mobile).
+**Action:** When a save action completes instantly, provide temporary inline visual feedback (like momentarily turning the save button green and changing text to "Saved!") to reassure the user that the action succeeded.
