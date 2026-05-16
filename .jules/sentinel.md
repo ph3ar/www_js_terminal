@@ -3,7 +3,7 @@
 **Learning:** Even though `pty.spawn` doesn't execute a shell directly, passing completely arbitrary arguments starting with hyphens can invoke dangerous features of the underlying program (e.g. telnet).
 **Prevention:** Always sanitize and validate socket inputs using strict regex (e.g., ensuring hostnames start with alphanumeric characters `^[a-zA-Z0-9]`) and explicitly parsing/bounding numbers before passing them to OS-level spawn commands.
 
-## 2024-04-10 - [Duplicate terminal event listeners and unsanitized parameters causing command injection bypass]
-**Vulnerability:** Double event listener registration for `term.on('data')` and `term.on('exit')` that was located outside `socket.on('start')`, combined with `safeHost` allowing leading hyphens, which could allow bypassing the regex check and injecting options to the telnet command spawned via `node-pty`.
-**Learning:** `term` is declared outside of `socket.on('start')` but double registered outside of it while `term.pid` accessing caused crashes. By only having the listener inside `start`, and also ensuring `safeHost` doesn't begin with a hyphen.
-**Prevention:** Remove duplicated code outside closures that depends on variables defined inside them, and add explicit prefix checks for arguments passed to `node-pty`.
+## 2025-02-25 - [DOM-based XSS via jQuery string concatenation]
+**Vulnerability:** DOM-based Cross-Site Scripting (XSS) vulnerability via unsanitized `name` parameters in `public/jutty.js` `listConnections()` when generating HTML for the UI list.
+**Learning:** Constructing HTML markup using string concatenation with unsanitized user inputs (`html += '<a...>' + name + '</a>'`) is inherently unsafe, especially with rendering engines like jQuery's `.html()`.
+**Prevention:** Construct DOM elements directly using safe APIs like `$('<a>', { text: name })` which automatically escapes strings for you, preventing any injected scripts from executing.
