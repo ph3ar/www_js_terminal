@@ -27,17 +27,12 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-app.get('/', limiter, function(req, res) {
-    res.sendFile(__dirname + '/public/index.html');
-});
-
 app.post('/', limiter, function(req, res) {
     res.sendFile(__dirname + '/public/index.html');
 });
 
 // Added maxAge for performance optimization (caching static files)
-// ⚡ Bolt Optimization: Rate limiting is bypassed for static assets to improve performance and save server resources
-app.use('/', express.static(path.join(__dirname, 'public/'), { maxAge: '1d' }));
+app.use('/', limiter, express.static(path.join(__dirname, 'public/'), { maxAge: '1d' }));
 
 function setupSocketIo(httpserv) {
     var io = server(httpserv, {path: '/socket.io'});
@@ -71,13 +66,6 @@ function setupSocketIo(httpserv) {
             var safeHost = hostStr.replace(/[^a-zA-Z0-9\.\-]/g, '');
             var safePort = portNum;
 
-            // Prevent command injection starting with a dash (-)
-            if (safeHost.startsWith('-')) {
-                log.error('Host cannot start with a hyphen');
-                socket.emit('end');
-                return;
-            }
-
             params = [safeHost, safePort.toString()];
 
             log.info(type, params.join(' '));
@@ -92,41 +80,16 @@ function setupSocketIo(httpserv) {
             });
 
             log.info(term.pid, 'spawned');
-
-            // ⚡ Bolt Optimization: Batch terminal output to drastically reduce Socket.IO messages
-            // This prevents UI freezes and reduces CPU overhead during high-throughput operations (e.g. catting large files)
-            var outBuffer = '';
-            var outTimeout = null;
-
-            function flushOutput() {
-                if (outBuffer) {
-                    socket.emit('output', outBuffer);
-                    outBuffer = '';
-                }
-                if (outTimeout) {
-                    clearTimeout(outTimeout);
-                    outTimeout = null;
-                }
-            }
-
             term.on('data', function(data) {
-                outBuffer += data;
-                if (!outTimeout) {
-                    outTimeout = setTimeout(flushOutput, 10);
-                }
+                socket.emit('output', data);
             });
-
             term.on('exit', function (code) {
                 log.info(term.pid, 'ended');
-                flushOutput();
                 socket.emit('end');
-                if (term) {
-                    term.kill();
-                    term = null;
-                }
+                term.kill();
+                term = null;
             });
         });
-
 
         socket.on('resize', function (data) {
             term && term.resize(parseInt(data.col, 10) || 80, parseInt(data.row, 10) || 24);
