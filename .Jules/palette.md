@@ -22,6 +22,7 @@
 ## 2025-04-17 - Visual Feedback on Save Button
 **Learning:** Adding temporary visual feedback (like changing a "Save" button to "Saved!" with a checkmark) greatly improves user confidence, but doing so naively can cause race conditions if the user double-clicks, leading to broken UI states or duplicate saves.
 **Action:** Always guard temporary UI states with a flag (e.g., `$el.data('saving')` or `isSaving` state) and ignore subsequent actions until the timeout completes and the state is reset.
-## 2025-05-19 - Safe Centering in Toggle-Heavy UIs
-**Learning:** In applications where JavaScript explicitly controls visibility using inline `display: none` / `display: block` toggles (like legacy jQuery apps), adding custom inline CSS like `display: flex` for centering will break the application's visibility logic.
-**Action:** When adding visual spacing or centering to elements governed by JS toggles, strictly avoid custom CSS/flexbox. Instead, utilize native HTML (like `<br>` tags) and standard CSS framework grid utilities (e.g., Bootstrap's `.container`, `.row`, `.col-md-offset-*`, `.text-center`) to achieve layout without conflicting with the `display` property.
+
+## 2025-04-17 - Screen Reader Support for Async Buttons
+**Learning:** When buttons update their text dynamically to show loading or success states (like "Connecting..." or "Saved!"), screen readers will not announce the state change by default, leaving non-visual users unaware of the action's progress.
+**Action:** Always add `aria-live="polite"` to buttons that have text that changes asynchronously. This ensures that when the inner text changes (e.g. from "Connect" to "Connecting..."), the screen reader will naturally announce the new state to the user.
