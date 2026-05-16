@@ -8,7 +8,7 @@
 **Learning:** `term` is declared outside of `socket.on('start')` but double registered outside of it while `term.pid` accessing caused crashes. By only having the listener inside `start`, and also ensuring `safeHost` doesn't begin with a hyphen.
 **Prevention:** Remove duplicated code outside closures that depends on variables defined inside them, and add explicit prefix checks for arguments passed to `node-pty`.
 
-## 2024-05-18 - [DOM-based XSS in Saved Connections]
-**Vulnerability:** DOM-based Cross-Site Scripting (XSS) via `$.html()` and string concatenation in `public/jutty.js`. When a saved connection with a malicious name was loaded from local storage, it was injected directly as HTML.
-**Learning:** Using string concatenation to build DOM elements from user input in jQuery makes it easy to introduce XSS. The browser parses the concatenated string as HTML, executing any injected scripts.
-**Prevention:** Instead of string concatenation and `.html()`, construct DOM elements programmatically using jQuery's element creation syntax (e.g., `$('<a>', { text: userInput })`) or use `.text()` to ensure the browser treats input safely as text, not HTML.
+## 2024-05-15 - [DOM-based XSS in Connection List Rendering]
+**Vulnerability:** DOM-based Cross-Site Scripting (XSS) vulnerability via insecure `html +=` string concatenation inside `public/jutty.js` `listConnections()`.
+**Learning:** Even internal settings pages and localized app configurations are susceptible to XSS if inputs (like connection names) aren't properly escaped when rendering from `localStorage`. Using jQuery `.html(html_string)` on unsanitized arrays/objects allows payloads to fire immediately on loading the page.
+**Prevention:** Avoid building DOM elements with user data using string concatenation. Use jQuery programmatic element creation `$('<a>', { text: name })` which automatically handles escaping via `createTextNode`.

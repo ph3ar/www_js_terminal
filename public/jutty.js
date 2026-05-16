@@ -159,16 +159,21 @@ $(document).ready(function () {
         var names = Object.keys(savedConnections).sort();
         $connections.empty();
         if (names.length === 0) {
-            var html = '<div class="list-group-item text-muted text-center p-3">' +
-                   '<span class="glyphicon glyphicon-info-sign h2 d-block mb-3" aria-hidden="true"></span><br>' +
-                   'No saved connections yet.<br>Fill out the form and click "Save" to add one.' +
-                   '</div>';
-            $connections.html(html);
+            $connections.html(
+                '<div class="list-group-item text-muted text-center p-3">' +
+                '<span class="glyphicon glyphicon-info-sign h2 d-block mb-3" aria-hidden="true"></span><br>' +
+                'No saved connections yet.<br>Fill out the form and click "Save" to add one.' +
+                '</div>'
+            );
         } else {
-            var elements = [];
+            // 🛡️ Sentinel: Safe DOM creation to prevent DOM-based XSS when rendering user inputs
             names.forEach(function (name) {
-                // 🛡️ Sentinel: Construct elements programmatically to prevent DOM XSS
-                var $a = $('<a>', { class: 'list-group-item load', href: '#', 'data-target': name, text: name });
+                var $a = $('<a>', {
+                    class: 'list-group-item load',
+                    href: '#',
+                    'data-target': name,
+                    text: name
+                });
                 var $btn = $('<button>', {
                     class: 'btn btn-xs btn-danger delete',
                     'data-name': name,
@@ -176,11 +181,11 @@ $(document).ready(function () {
                     title: 'Delete ' + name + ' connection'
                 });
                 var $icon = $('<span>', { class: 'glyphicon glyphicon-trash', 'aria-hidden': 'true' });
+
                 $btn.append($icon);
                 $a.append($btn);
-                elements.push($a);
+                $connections.append($a);
             });
-            $connections.append(elements);
         }
     }
 
