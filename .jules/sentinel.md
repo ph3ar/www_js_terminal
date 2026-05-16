@@ -8,7 +8,7 @@
 **Learning:** `term` is declared outside of `socket.on('start')` but double registered outside of it while `term.pid` accessing caused crashes. By only having the listener inside `start`, and also ensuring `safeHost` doesn't begin with a hyphen.
 **Prevention:** Remove duplicated code outside closures that depends on variables defined inside them, and add explicit prefix checks for arguments passed to `node-pty`.
 
-## 2024-05-24 - [DOM-based XSS in jQuery HTML concatenation]
-**Vulnerability:** DOM-based Cross-Site Scripting (XSS) via jQuery `html()` manipulation in `public/jutty.js`. The `listConnections` function iterates over user-controlled connection names and builds raw HTML strings containing those names (`'<a ... data-target="' + name + '">' + name + ...`). If a user creates a connection with a malicious name (like `<script>alert(1)</script>`), the script is executed when the connection list is rendered.
-**Learning:** Concatenating user inputs directly into HTML strings and assigning them via `.html()`, `.append()`, or similar DOM injection points easily causes DOM-based XSS, even for seemingly innocuous "names".
-**Prevention:** Avoid constructing HTML markup with user inputs using string concatenation. Instead, use jQuery's programmatic element creation (e.g., `$('<a>', { text: name, class: '...' })`), which safely escapes text content and attributes automatically.
+## 2024-05-18 - [DOM-based XSS in Saved Connections]
+**Vulnerability:** DOM-based Cross-Site Scripting (XSS) via `$.html()` and string concatenation in `public/jutty.js`. When a saved connection with a malicious name was loaded from local storage, it was injected directly as HTML.
+**Learning:** Using string concatenation to build DOM elements from user input in jQuery makes it easy to introduce XSS. The browser parses the concatenated string as HTML, executing any injected scripts.
+**Prevention:** Instead of string concatenation and `.html()`, construct DOM elements programmatically using jQuery's element creation syntax (e.g., `$('<a>', { text: userInput })`) or use `.text()` to ensure the browser treats input safely as text, not HTML.

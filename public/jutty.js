@@ -158,7 +158,6 @@ $(document).ready(function () {
     function listConnections() {
         var names = Object.keys(savedConnections).sort();
         $connections.empty();
-
         if (names.length === 0) {
             var html = '<div class="list-group-item text-muted text-center p-3">' +
                    '<span class="glyphicon glyphicon-info-sign h2 d-block mb-3" aria-hidden="true"></span><br>' +
@@ -166,26 +165,22 @@ $(document).ready(function () {
                    '</div>';
             $connections.html(html);
         } else {
+            var elements = [];
             names.forEach(function (name) {
-                var $a = $('<a>', {
-                    class: 'list-group-item load',
-                    href: '#',
-                    'data-target': name,
-                    text: name
-                });
+                // 🛡️ Sentinel: Construct elements programmatically to prevent DOM XSS
+                var $a = $('<a>', { class: 'list-group-item load', href: '#', 'data-target': name, text: name });
                 var $btn = $('<button>', {
                     class: 'btn btn-xs btn-danger delete',
                     'data-name': name,
                     'aria-label': 'Delete ' + name + ' connection',
                     title: 'Delete ' + name + ' connection'
                 });
-                $btn.append($('<span>', {
-                    class: 'glyphicon glyphicon-trash',
-                    'aria-hidden': 'true'
-                }));
+                var $icon = $('<span>', { class: 'glyphicon glyphicon-trash', 'aria-hidden': 'true' });
+                $btn.append($icon);
                 $a.append($btn);
-                $connections.append($a);
+                elements.push($a);
             });
+            $connections.append(elements);
         }
     }
 
