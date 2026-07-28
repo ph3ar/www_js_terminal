@@ -2,7 +2,7 @@
   "name": "PH3AR Terminal",
   "version": "1.0.0",
   "dependencies": {
-    "body-parser": "^1.16.1",
+    "body-parser": "^1.20.6",
     "express": "^4.17.3",
     "express-rate-limit": "^8.3.1",
     "node-pty": "^1.1.0",
